@@ -211,17 +211,32 @@ class OrbDestroyer {
   }
 
   addMuzzleFlash() {
+    for (let i = 0; i < 8; i++) {
+      this.particles.push({
+        x: this.cannon.x + (Math.random() - 0.5) * 25,
+        y: this.cannon.y - 40 + (Math.random() - 0.5) * 10,
+        vx: (Math.random() - 0.5) * 6,
+        vy: -Math.random() * 5 - 2,
+        life: 20,
+        maxLife: 20,
+        color: `hsl(${20 + Math.random() * 40}, 100%, ${
+          50 + Math.random() * 30
+        }%)`,
+        type: "explosion",
+      });
+    }
+
+    // Add some sparks
     for (let i = 0; i < 5; i++) {
       this.particles.push({
-        x: this.cannon.x + (Math.random() - 0.5) * 20,
-        y: this.cannon.y - 20,
+        x: this.cannon.x + (Math.random() - 0.5) * 15,
+        y: this.cannon.y - 35,
         vx: (Math.random() - 0.5) * 4,
         vy: -Math.random() * 3,
         life: 15,
         maxLife: 15,
-        color: `hsl(${20 + Math.random() * 40}, 100%, ${
-          50 + Math.random() * 30
-        }%)`,
+        color: "#ffffff",
+        type: "spark",
       });
     }
   }
@@ -435,29 +450,76 @@ class OrbDestroyer {
   }
 
   addHitEffect(x, y, color) {
-    for (let i = 0; i < 8; i++) {
-      this.particles.push({
-        x: x,
-        y: y,
-        vx: (Math.random() - 0.5) * 6,
-        vy: (Math.random() - 0.5) * 6,
-        life: 20,
-        maxLife: 20,
-        color: color,
-      });
-    }
-  }
-
-  addArmorBreakEffect(x, y) {
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 12; i++) {
       this.particles.push({
         x: x,
         y: y,
         vx: (Math.random() - 0.5) * 8,
         vy: (Math.random() - 0.5) * 8,
-        life: 30,
-        maxLife: 30,
+        life: 25,
+        maxLife: 25,
+        color: color,
+        type: "explosion",
+        rotation: Math.random() * Math.PI * 2,
+      });
+    }
+
+    // Add electric sparks for hits
+    for (let i = 0; i < 6; i++) {
+      this.particles.push({
+        x: x + (Math.random() - 0.5) * 20,
+        y: y + (Math.random() - 0.5) * 20,
+        vx: (Math.random() - 0.5) * 4,
+        vy: (Math.random() - 0.5) * 4,
+        life: 15,
+        maxLife: 15,
         color: "#ffffff",
+        type: "spark",
+      });
+    }
+  }
+
+  addArmorBreakEffect(x, y) {
+    // Large explosion for armor break
+    for (let i = 0; i < 20; i++) {
+      this.particles.push({
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 12,
+        vy: (Math.random() - 0.5) * 12,
+        life: 40,
+        maxLife: 40,
+        color: "#ffffff",
+        type: "explosion",
+        rotation: Math.random() * Math.PI * 2,
+      });
+    }
+
+    // Metal fragments
+    for (let i = 0; i < 10; i++) {
+      this.particles.push({
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 10,
+        vy: (Math.random() - 0.5) * 10,
+        life: 35,
+        maxLife: 35,
+        color: "#aaaaaa",
+        type: "explosion",
+      });
+    }
+
+    // Electric discharge
+    for (let i = 0; i < 8; i++) {
+      this.particles.push({
+        x: x + (Math.random() - 0.5) * 30,
+        y: y + (Math.random() - 0.5) * 30,
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6,
+        life: 20,
+        maxLife: 20,
+        color: "#00ffff",
+        type: "spark",
       });
     }
   }
@@ -491,8 +553,39 @@ class OrbDestroyer {
   destroyOrb() {
     this.currentOrb.destroyed = true;
 
-    // Big explosion effect
-    for (let i = 0; i < 50; i++) {
+    // Massive explosion effect with multiple types
+    for (let i = 0; i < 80; i++) {
+      this.particles.push({
+        x: this.currentOrb.x,
+        y: this.currentOrb.y,
+        vx: (Math.random() - 0.5) * 20,
+        vy: (Math.random() - 0.5) * 20,
+        life: 80,
+        maxLife: 80,
+        color: `hsl(${Math.random() * 60 + 10}, 100%, ${
+          50 + Math.random() * 30
+        }%)`,
+        type: "explosion",
+        rotation: Math.random() * Math.PI * 2,
+      });
+    }
+
+    // Energy discharge sparks
+    for (let i = 0; i < 30; i++) {
+      this.particles.push({
+        x: this.currentOrb.x + (Math.random() - 0.5) * 40,
+        y: this.currentOrb.y + (Math.random() - 0.5) * 40,
+        vx: (Math.random() - 0.5) * 15,
+        vy: (Math.random() - 0.5) * 15,
+        life: 50,
+        maxLife: 50,
+        color: "#ffffff",
+        type: "spark",
+      });
+    }
+
+    // Purple energy wisps
+    for (let i = 0; i < 25; i++) {
       this.particles.push({
         x: this.currentOrb.x,
         y: this.currentOrb.y,
@@ -500,13 +593,11 @@ class OrbDestroyer {
         vy: (Math.random() - 0.5) * 12,
         life: 60,
         maxLife: 60,
-        color: `hsl(${Math.random() * 60 + 10}, 100%, ${
-          50 + Math.random() * 30
-        }%)`,
+        color: "#aa00ff",
       });
     }
 
-    // Drop bonus coins
+    // Drop bonus coins with improved animation
     this.dropCoins(this.currentOrb.x, this.currentOrb.y, 5 + this.level);
 
     // Show level complete after a delay
@@ -531,12 +622,17 @@ class OrbDestroyer {
   }
 
   render() {
-    // Clear screen with gradient background
+    // Clear screen with enhanced gradient background
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvasHeight);
-    gradient.addColorStop(0, "#000033");
-    gradient.addColorStop(1, "#000011");
+    gradient.addColorStop(0, "#000044");
+    gradient.addColorStop(0.3, "#000022");
+    gradient.addColorStop(0.7, "#000011");
+    gradient.addColorStop(1, "#000000");
     this.ctx.fillStyle = gradient;
     this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    // Add nebula effects
+    this.drawNebula();
 
     // Draw starfield
     this.drawStarfield();
@@ -551,62 +647,155 @@ class OrbDestroyer {
 
     // Draw projectiles
     this.projectiles.forEach((proj) => {
-      // Draw trail
-      this.ctx.strokeStyle = "#ff6b35";
-      this.ctx.lineWidth = 3;
-      this.ctx.globalAlpha = 0.8;
-      this.ctx.beginPath();
-      for (let i = 0; i < proj.trail.length - 1; i++) {
-        const alpha = i / proj.trail.length;
-        this.ctx.globalAlpha = alpha * 0.8;
-        if (i === 0) {
-          this.ctx.moveTo(proj.trail[i].x, proj.trail[i].y);
-        } else {
-          this.ctx.lineTo(proj.trail[i].x, proj.trail[i].y);
-        }
-      }
-      this.ctx.stroke();
-      this.ctx.globalAlpha = 1;
+      // Enhanced trail with gradient
+      if (proj.trail.length > 1) {
+        this.ctx.lineWidth = 6;
+        this.ctx.lineCap = "round";
+        this.ctx.lineJoin = "round";
 
-      // Draw projectile
-      this.ctx.fillStyle = "#ff6b35";
+        for (let i = 0; i < proj.trail.length - 1; i++) {
+          const alpha = (i / proj.trail.length) * 0.8;
+          const trailGradient = this.ctx.createLinearGradient(
+            proj.trail[i].x,
+            proj.trail[i].y,
+            proj.trail[i + 1].x,
+            proj.trail[i + 1].y
+          );
+          trailGradient.addColorStop(0, `rgba(255, 107, 53, ${alpha * 0.5})`);
+          trailGradient.addColorStop(1, `rgba(255, 170, 85, ${alpha})`);
+
+          this.ctx.strokeStyle = trailGradient;
+          this.ctx.globalAlpha = alpha;
+          this.ctx.beginPath();
+          this.ctx.moveTo(proj.trail[i].x, proj.trail[i].y);
+          this.ctx.lineTo(proj.trail[i + 1].x, proj.trail[i + 1].y);
+          this.ctx.stroke();
+        }
+        this.ctx.globalAlpha = 1;
+        this.ctx.lineCap = "butt";
+        this.ctx.lineJoin = "miter";
+      }
+
+      // Enhanced projectile with energy core
+      this.ctx.save();
+      this.ctx.translate(proj.x, proj.y);
+
+      // Outer energy glow
       this.ctx.shadowColor = "#ff6b35";
-      this.ctx.shadowBlur = 10;
+      this.ctx.shadowBlur = 20;
+      this.ctx.fillStyle = "#ff6b35";
       this.ctx.beginPath();
-      this.ctx.arc(proj.x, proj.y, 4, 0, Math.PI * 2);
+      this.ctx.arc(0, 0, 8, 0, Math.PI * 2);
       this.ctx.fill();
+
+      // Inner core
+      this.ctx.shadowBlur = 10;
+      this.ctx.fillStyle = "#ffaa55";
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, 5, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Bright center
+      this.ctx.shadowBlur = 5;
+      this.ctx.fillStyle = "#ffffff";
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, 2, 0, Math.PI * 2);
+      this.ctx.fill();
+
       this.ctx.shadowBlur = 0;
+      this.ctx.restore();
     });
 
-    // Draw particles
+    // Enhanced particles with different types
     this.particles.forEach((particle) => {
       const alpha = particle.life / particle.maxLife;
       this.ctx.globalAlpha = alpha;
-      this.ctx.fillStyle = particle.color;
-      this.ctx.beginPath();
-      this.ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2);
-      this.ctx.fill();
+
+      // Different particle rendering based on type
+      if (particle.type === "explosion") {
+        // Large explosion particles
+        this.ctx.save();
+        this.ctx.translate(particle.x, particle.y);
+        this.ctx.rotate(particle.rotation || 0);
+
+        const size = 3 + (1 - alpha) * 4;
+        this.ctx.fillStyle = particle.color;
+        this.ctx.shadowColor = particle.color;
+        this.ctx.shadowBlur = 8;
+        this.ctx.fillRect(-size / 2, -size / 2, size, size);
+
+        this.ctx.restore();
+      } else if (particle.type === "spark") {
+        // Electric spark particles
+        this.ctx.strokeStyle = particle.color;
+        this.ctx.lineWidth = 2;
+        this.ctx.lineCap = "round";
+        this.ctx.shadowColor = particle.color;
+        this.ctx.shadowBlur = 5;
+        this.ctx.beginPath();
+        this.ctx.moveTo(particle.x - 3, particle.y);
+        this.ctx.lineTo(particle.x + 3, particle.y);
+        this.ctx.moveTo(particle.x, particle.y - 3);
+        this.ctx.lineTo(particle.x, particle.y + 3);
+        this.ctx.stroke();
+      } else {
+        // Default circular particles with glow
+        this.ctx.fillStyle = particle.color;
+        this.ctx.shadowColor = particle.color;
+        this.ctx.shadowBlur = 6;
+        this.ctx.beginPath();
+        this.ctx.arc(particle.x, particle.y, 2 + alpha * 2, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+      this.ctx.shadowBlur = 0;
     });
     this.ctx.globalAlpha = 1;
 
-    // Draw coin drops
+    // Enhanced coin drops with animation
     this.coinDrops.forEach((coin) => {
       this.ctx.save();
       this.ctx.translate(coin.x, coin.y);
       this.ctx.rotate(coin.rotation);
-      this.ctx.fillStyle = "#f7931e";
-      this.ctx.strokeStyle = "#ffffff";
-      this.ctx.lineWidth = 2;
+
+      // Coin glow effect
+      this.ctx.shadowColor = "#f7931e";
+      this.ctx.shadowBlur = 15;
+
+      // Outer ring
+      this.ctx.strokeStyle = "#ffcc00";
+      this.ctx.lineWidth = 3;
       this.ctx.beginPath();
-      this.ctx.arc(0, 0, 8, 0, Math.PI * 2);
-      this.ctx.fill();
+      this.ctx.arc(0, 0, 12, 0, Math.PI * 2);
       this.ctx.stroke();
 
-      // Draw dollar sign
+      // Main coin body with gradient
+      const coinGradient = this.ctx.createRadialGradient(0, 0, 0, 0, 0, 10);
+      coinGradient.addColorStop(0, "#ffcc00");
+      coinGradient.addColorStop(0.7, "#f7931e");
+      coinGradient.addColorStop(1, "#cc7700");
+
+      this.ctx.fillStyle = coinGradient;
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Inner shine
+      this.ctx.fillStyle = "#ffffff";
+      this.ctx.globalAlpha = 0.6;
+      this.ctx.beginPath();
+      this.ctx.arc(-2, -2, 3, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.globalAlpha = 1;
+
+      // Dollar sign with 3D effect
       this.ctx.fillStyle = "#000000";
-      this.ctx.font = "bold 10px Arial";
+      this.ctx.font = "bold 12px Arial";
       this.ctx.textAlign = "center";
-      this.ctx.fillText("$", 0, 3);
+      this.ctx.fillText("$", 1, 1); // Shadow
+      this.ctx.fillStyle = "#ffffff";
+      this.ctx.fillText("$", 0, 4); // Main text
+
+      this.ctx.shadowBlur = 0;
       this.ctx.restore();
     });
 
@@ -628,30 +817,97 @@ class OrbDestroyer {
     this.ctx.save();
     this.ctx.translate(this.cannon.x, this.cannon.y);
 
-    // Cannon base
-    this.ctx.fillStyle = "#333333";
-    this.ctx.strokeStyle = "#666666";
-    this.ctx.lineWidth = 3;
+    // Cannon platform/base - larger with rivets
+    const gradient = this.ctx.createRadialGradient(0, 0, 10, 0, 0, 35);
+    gradient.addColorStop(0, "#4a4a4a");
+    gradient.addColorStop(0.6, "#2a2a2a");
+    gradient.addColorStop(1, "#1a1a1a");
+    this.ctx.fillStyle = gradient;
     this.ctx.beginPath();
-    this.ctx.arc(0, 0, 25, 0, Math.PI * 2);
+    this.ctx.arc(0, 0, 35, 0, Math.PI * 2);
     this.ctx.fill();
+
+    // Base outline with metallic shine
+    this.ctx.strokeStyle = "#6a6a6a";
+    this.ctx.lineWidth = 4;
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, 35, 0, Math.PI * 2);
     this.ctx.stroke();
 
-    // Cannon barrel
-    this.ctx.fillStyle = "#555555";
-    this.ctx.strokeStyle = "#888888";
-    this.ctx.lineWidth = 2;
-    this.ctx.fillRect(-8, -40, 16, 40);
-    this.ctx.strokeRect(-8, -40, 16, 40);
+    // Rivets around the base
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const x = Math.cos(angle) * 28;
+      const y = Math.sin(angle) * 28;
+      this.ctx.fillStyle = "#8a8a8a";
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, 3, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.strokeStyle = "#1a1a1a";
+      this.ctx.lineWidth = 1;
+      this.ctx.stroke();
+    }
 
-    // Cannon tip glow
+    // Cannon barrel with gradient and detail
+    const barrelGradient = this.ctx.createLinearGradient(-12, 0, 12, 0);
+    barrelGradient.addColorStop(0, "#2a2a2a");
+    barrelGradient.addColorStop(0.3, "#4a4a4a");
+    barrelGradient.addColorStop(0.7, "#4a4a4a");
+    barrelGradient.addColorStop(1, "#2a2a2a");
+    this.ctx.fillStyle = barrelGradient;
+    this.ctx.fillRect(-12, -50, 24, 50);
+
+    // Barrel outline
+    this.ctx.strokeStyle = "#6a6a6a";
+    this.ctx.lineWidth = 3;
+    this.ctx.strokeRect(-12, -50, 24, 50);
+
+    // Barrel rings for detail
+    for (let i = 1; i <= 3; i++) {
+      this.ctx.strokeStyle = "#5a5a5a";
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.moveTo(-12, -50 + i * 12);
+      this.ctx.lineTo(12, -50 + i * 12);
+      this.ctx.stroke();
+    }
+
+    // Cannon tip with enhanced glow effect
     this.ctx.shadowColor = "#ff6b35";
-    this.ctx.shadowBlur = 15;
-    this.ctx.fillStyle = "#ff6b35";
+    this.ctx.shadowBlur = 25;
+
+    // Inner glow
+    this.ctx.fillStyle = "#ffaa55";
     this.ctx.beginPath();
-    this.ctx.arc(0, -40, 4, 0, Math.PI * 2);
+    this.ctx.arc(0, -50, 8, 0, Math.PI * 2);
     this.ctx.fill();
+
+    // Outer energy ring
+    this.ctx.strokeStyle = "#ff6b35";
+    this.ctx.lineWidth = 3;
+    this.ctx.beginPath();
+    this.ctx.arc(0, -50, 12, 0, Math.PI * 2);
+    this.ctx.stroke();
+
     this.ctx.shadowBlur = 0;
+
+    // Power level indicator lights
+    const powerLevel = Math.min(this.cannon.damage / 50, 1);
+    for (let i = 0; i < 5; i++) {
+      const lightY = -20 + i * 8;
+      const isActive = i < powerLevel * 5;
+      this.ctx.fillStyle = isActive ? "#00ff00" : "#003300";
+      this.ctx.beginPath();
+      this.ctx.arc(16, lightY, 2, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      if (isActive) {
+        this.ctx.shadowColor = "#00ff00";
+        this.ctx.shadowBlur = 10;
+        this.ctx.fill();
+        this.ctx.shadowBlur = 0;
+      }
+    }
 
     this.ctx.restore();
   }
@@ -661,93 +917,337 @@ class OrbDestroyer {
 
     this.ctx.save();
     this.ctx.translate(orb.x, orb.y);
+
+    // Create pulsing energy aura around orb
+    const pulseScale = 1 + Math.sin(Date.now() * 0.005) * 0.1;
+    this.ctx.save();
+    this.ctx.scale(pulseScale, pulseScale);
+    this.ctx.shadowColor = "#ff00ff";
+    this.ctx.shadowBlur = 30;
+    this.ctx.strokeStyle = "#ff00ff";
+    this.ctx.lineWidth = 3;
+    this.ctx.globalAlpha = 0.4;
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, orb.radius + 10, 0, Math.PI * 2);
+    this.ctx.stroke();
+    this.ctx.restore();
+    this.ctx.shadowBlur = 0;
+    this.ctx.globalAlpha = 1;
+
     this.ctx.rotate(orb.rotation);
 
-    // Draw orb core
+    // Draw orb core with multiple layers
     const healthPercent = orb.health / orb.maxHealth;
-    const coreColor = `hsl(${healthPercent * 120}, 80%, 50%)`; // Red to green
 
-    this.ctx.fillStyle = coreColor;
-    this.ctx.shadowColor = coreColor;
-    this.ctx.shadowBlur = 20;
+    // Outer core ring with energy
+    const outerGradient = this.ctx.createRadialGradient(
+      0,
+      0,
+      0,
+      0,
+      0,
+      orb.radius - 25
+    );
+    outerGradient.addColorStop(
+      0,
+      `hsla(${280 + healthPercent * 80}, 80%, 60%, 0.8)`
+    );
+    outerGradient.addColorStop(
+      0.7,
+      `hsla(${260 + healthPercent * 60}, 70%, 40%, 0.6)`
+    );
+    outerGradient.addColorStop(
+      1,
+      `hsla(${240 + healthPercent * 40}, 60%, 20%, 0.3)`
+    );
+
+    this.ctx.fillStyle = outerGradient;
+    this.ctx.shadowColor = `hsl(${280 + healthPercent * 80}, 80%, 60%)`;
+    this.ctx.shadowBlur = 25;
     this.ctx.beginPath();
-    this.ctx.arc(0, 0, orb.radius - 30, 0, Math.PI * 2);
+    this.ctx.arc(0, 0, orb.radius - 25, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Inner core with crystalline pattern
+    const innerGradient = this.ctx.createRadialGradient(
+      0,
+      0,
+      0,
+      0,
+      0,
+      orb.radius - 35
+    );
+    innerGradient.addColorStop(0, `hsl(${300 + healthPercent * 60}, 90%, 80%)`);
+    innerGradient.addColorStop(
+      0.5,
+      `hsl(${280 + healthPercent * 40}, 80%, 60%)`
+    );
+    innerGradient.addColorStop(1, `hsl(${260 + healthPercent * 20}, 70%, 40%)`);
+
+    this.ctx.fillStyle = innerGradient;
+    this.ctx.shadowBlur = 15;
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, orb.radius - 35, 0, Math.PI * 2);
     this.ctx.fill();
     this.ctx.shadowBlur = 0;
 
-    // Draw orb outline
-    this.ctx.strokeStyle = "#ffffff";
-    this.ctx.lineWidth = 3;
-    this.ctx.beginPath();
-    this.ctx.arc(0, 0, orb.radius - 30, 0, Math.PI * 2);
-    this.ctx.stroke();
+    // Crystalline pattern in the core
+    this.ctx.strokeStyle = `hsla(${320 + healthPercent * 40}, 100%, 90%, 0.6)`;
+    this.ctx.lineWidth = 2;
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2;
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, 0);
+      const endX = Math.cos(angle) * (orb.radius - 40);
+      const endY = Math.sin(angle) * (orb.radius - 40);
+      this.ctx.lineTo(endX, endY);
+      this.ctx.stroke();
+    }
 
-    // Draw armor segments
-    orb.armor.forEach((armor) => {
+    // Draw armor segments with detailed design
+    orb.armor.forEach((armor, index) => {
       if (armor.destroyed) return;
 
       const armorX = Math.cos(armor.angle) * (orb.radius - 20);
       const armorY = Math.sin(armor.angle) * (orb.radius - 20);
       const armorHealth = armor.health / armor.maxHealth;
 
-      this.ctx.fillStyle = `rgba(136, 136, 136, ${armorHealth})`;
-      this.ctx.strokeStyle = "#ffffff";
-      this.ctx.lineWidth = 2;
+      this.ctx.save();
+      this.ctx.translate(armorX, armorY);
+      this.ctx.rotate(armor.angle + orb.rotation * 0.5);
+
+      // Armor base with metallic gradient
+      const armorGradient = this.ctx.createRadialGradient(0, 0, 0, 0, 0, 25);
+      armorGradient.addColorStop(0, `rgba(180, 180, 200, ${armorHealth})`);
+      armorGradient.addColorStop(
+        0.6,
+        `rgba(120, 120, 140, ${armorHealth * 0.8})`
+      );
+      armorGradient.addColorStop(1, `rgba(60, 60, 80, ${armorHealth * 0.6})`);
+
+      this.ctx.fillStyle = armorGradient;
+      this.ctx.shadowColor = "#ffffff";
+      this.ctx.shadowBlur = 8;
       this.ctx.beginPath();
-      this.ctx.arc(armorX, armorY, 20, 0, Math.PI * 2);
+      this.ctx.arc(0, 0, 22, 0, Math.PI * 2);
       this.ctx.fill();
+
+      // Armor hexagonal shape
+      this.ctx.strokeStyle = `rgba(255, 255, 255, ${armorHealth})`;
+      this.ctx.lineWidth = 3;
+      this.ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const hexAngle = (i / 6) * Math.PI * 2;
+        const hexX = Math.cos(hexAngle) * 18;
+        const hexY = Math.sin(hexAngle) * 18;
+        if (i === 0) {
+          this.ctx.moveTo(hexX, hexY);
+        } else {
+          this.ctx.lineTo(hexX, hexY);
+        }
+      }
+      this.ctx.closePath();
       this.ctx.stroke();
 
-      // Armor damage cracks
-      if (armorHealth < 0.5) {
-        this.ctx.strokeStyle = "#ff0000";
-        this.ctx.lineWidth = 1;
+      // Armor detail lines
+      this.ctx.strokeStyle = `rgba(200, 200, 220, ${armorHealth * 0.8})`;
+      this.ctx.lineWidth = 1;
+      for (let i = 0; i < 3; i++) {
+        const lineAngle = (i / 3) * Math.PI * 2;
         this.ctx.beginPath();
-        this.ctx.moveTo(armorX - 10, armorY - 5);
-        this.ctx.lineTo(armorX + 8, armorY + 7);
-        this.ctx.moveTo(armorX - 8, armorY + 6);
-        this.ctx.lineTo(armorX + 10, armorY - 4);
+        this.ctx.moveTo(Math.cos(lineAngle) * 8, Math.sin(lineAngle) * 8);
+        this.ctx.lineTo(Math.cos(lineAngle) * 16, Math.sin(lineAngle) * 16);
         this.ctx.stroke();
       }
+
+      // Damage effects
+      if (armorHealth < 0.7) {
+        this.ctx.strokeStyle = "#ffaa00";
+        this.ctx.lineWidth = 2;
+        this.ctx.globalAlpha = 1 - armorHealth;
+        for (let i = 0; i < 3; i++) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(
+            (Math.random() - 0.5) * 30,
+            (Math.random() - 0.5) * 30
+          );
+          this.ctx.lineTo(
+            (Math.random() - 0.5) * 30,
+            (Math.random() - 0.5) * 30
+          );
+          this.ctx.stroke();
+        }
+        this.ctx.globalAlpha = 1;
+      }
+
+      if (armorHealth < 0.3) {
+        // Sparks from damaged armor
+        this.ctx.fillStyle = "#ff6600";
+        this.ctx.shadowColor = "#ff6600";
+        this.ctx.shadowBlur = 5;
+        for (let i = 0; i < 2; i++) {
+          this.ctx.beginPath();
+          this.ctx.arc(
+            (Math.random() - 0.5) * 20,
+            (Math.random() - 0.5) * 20,
+            1,
+            0,
+            Math.PI * 2
+          );
+          this.ctx.fill();
+        }
+        this.ctx.shadowBlur = 0;
+      }
+
+      this.ctx.restore();
     });
 
     this.ctx.restore();
 
-    // Draw health bar above orb
-    const barWidth = 100;
-    const barHeight = 8;
+    // Enhanced health bar with multiple segments
+    const barWidth = 120;
+    const barHeight = 12;
     const barX = orb.x - barWidth / 2;
-    const barY = orb.y - orb.radius - 20;
+    const barY = orb.y - orb.radius - 30;
 
-    this.ctx.fillStyle = "#000000";
-    this.ctx.fillRect(barX, barY, barWidth, barHeight);
-    this.ctx.fillStyle = coreColor;
-    this.ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+    // Health bar background
+    this.ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+    this.ctx.fillRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
+
+    // Health bar segments
+    const segments = 10;
+    const segmentWidth = barWidth / segments;
+    for (let i = 0; i < segments; i++) {
+      const segmentHealth = Math.max(
+        0,
+        Math.min(1, healthPercent * segments - i)
+      );
+      const segmentX = barX + i * segmentWidth;
+
+      if (segmentHealth > 0) {
+        const segmentColor = `hsl(${segmentHealth * 120}, 100%, ${
+          50 + segmentHealth * 20
+        }%)`;
+        this.ctx.fillStyle = segmentColor;
+        this.ctx.fillRect(segmentX, barY, segmentWidth - 1, barHeight);
+
+        if (segmentHealth === 1) {
+          this.ctx.shadowColor = segmentColor;
+          this.ctx.shadowBlur = 8;
+          this.ctx.fillRect(segmentX, barY, segmentWidth - 1, barHeight);
+          this.ctx.shadowBlur = 0;
+        }
+      }
+    }
+
+    // Health bar outline
     this.ctx.strokeStyle = "#ffffff";
-    this.ctx.lineWidth = 1;
+    this.ctx.lineWidth = 2;
     this.ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+    // Armor indicators
+    const armorCount = orb.armor.filter((a) => !a.destroyed).length;
+    for (let i = 0; i < armorCount; i++) {
+      this.ctx.fillStyle = "#cccccc";
+      this.ctx.shadowColor = "#cccccc";
+      this.ctx.shadowBlur = 3;
+      this.ctx.beginPath();
+      this.ctx.arc(barX - 10 - i * 8, barY + barHeight / 2, 3, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+    }
   }
 
   drawStarfield() {
     this.stars = this.stars || [];
-    if (this.stars.length < 100) {
-      for (let i = 0; i < 100; i++) {
+    if (this.stars.length < 150) {
+      for (let i = 0; i < 150; i++) {
         this.stars.push({
           x: Math.random() * this.canvasWidth,
           y: Math.random() * this.canvasHeight,
-          size: Math.random() * 2,
+          size: Math.random() * 3 + 0.5,
           alpha: Math.random(),
+          twinkleSpeed: 0.02 + Math.random() * 0.05,
+          color: Math.random() > 0.8 ? "#88ccff" : "#ffffff",
+          distance: Math.random(), // For parallax effect
         });
       }
     }
 
     this.stars.forEach((star) => {
-      star.alpha += (Math.random() - 0.5) * 0.1;
+      // Twinkling effect
+      star.alpha += (Math.random() - 0.5) * star.twinkleSpeed;
       star.alpha = Math.max(0.1, Math.min(1, star.alpha));
 
+      // Subtle movement for parallax
+      star.y += star.distance * 0.1;
+      if (star.y > this.canvasHeight) {
+        star.y = -star.size;
+        star.x = Math.random() * this.canvasWidth;
+      }
+
       this.ctx.globalAlpha = star.alpha;
-      this.ctx.fillStyle = "#ffffff";
+      this.ctx.fillStyle = star.color;
+
+      // Add glow to larger stars
+      if (star.size > 2) {
+        this.ctx.shadowColor = star.color;
+        this.ctx.shadowBlur = star.size * 2;
+      }
+
       this.ctx.fillRect(star.x, star.y, star.size, star.size);
+      this.ctx.shadowBlur = 0;
+    });
+    this.ctx.globalAlpha = 1;
+  }
+
+  drawNebula() {
+    // Create colorful nebula clouds
+    this.nebulaClouds = this.nebulaClouds || [];
+    if (this.nebulaClouds.length < 5) {
+      for (let i = 0; i < 5; i++) {
+        this.nebulaClouds.push({
+          x: Math.random() * this.canvasWidth,
+          y: Math.random() * this.canvasHeight,
+          radius: 50 + Math.random() * 100,
+          color: `hsl(${Math.random() * 360}, 70%, 40%)`,
+          alpha: 0.1 + Math.random() * 0.2,
+          drift: {
+            x: (Math.random() - 0.5) * 0.2,
+            y: (Math.random() - 0.5) * 0.2,
+          },
+        });
+      }
+    }
+
+    this.nebulaClouds.forEach((cloud) => {
+      cloud.x += cloud.drift.x;
+      cloud.y += cloud.drift.y;
+
+      // Wrap around screen
+      if (cloud.x < -cloud.radius) cloud.x = this.canvasWidth + cloud.radius;
+      if (cloud.x > this.canvasWidth + cloud.radius) cloud.x = -cloud.radius;
+      if (cloud.y < -cloud.radius) cloud.y = this.canvasHeight + cloud.radius;
+      if (cloud.y > this.canvasHeight + cloud.radius) cloud.y = -cloud.radius;
+
+      // Draw nebula cloud
+      const gradient = this.ctx.createRadialGradient(
+        cloud.x,
+        cloud.y,
+        0,
+        cloud.x,
+        cloud.y,
+        cloud.radius
+      );
+      gradient.addColorStop(0, cloud.color.replace("40%", "30%"));
+      gradient.addColorStop(0.7, cloud.color.replace("40%", "15%"));
+      gradient.addColorStop(1, "transparent");
+
+      this.ctx.globalAlpha = cloud.alpha;
+      this.ctx.fillStyle = gradient;
+      this.ctx.beginPath();
+      this.ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
+      this.ctx.fill();
     });
     this.ctx.globalAlpha = 1;
   }
