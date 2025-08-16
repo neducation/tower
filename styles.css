@@ -1,0 +1,455 @@
+/* Mobile-First Space Tower Defense */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  color: #00ffff;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+  height: 100vh;
+}
+
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  transition: all 0.5s ease;
+}
+
+.screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+}
+
+/* START SCREEN */
+#start-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+}
+
+.start-content {
+  text-align: center;
+  animation: pulse 2s infinite;
+}
+
+.game-title {
+  font-size: 3rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #00ffff, #ff1493, #39ff14, #00ffff);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient 3s ease infinite;
+  line-height: 0.9;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+}
+
+.start-subtitle {
+  font-size: 1.1rem;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  opacity: 0.8;
+}
+
+.start-button {
+  background: linear-gradient(45deg, #ff6b35, #f7931e);
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #000;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+}
+
+.start-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(255, 107, 53, 0.6);
+}
+
+.start-instructions {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  line-height: 1.5;
+}
+
+.start-instructions p {
+  margin: 0.5rem 0;
+}
+
+/* GAME SCREEN */
+#game-screen {
+  display: flex;
+  flex-direction: column;
+}
+
+#game-area {
+  height: 67vh;
+  position: relative;
+  background: #000011;
+  border-bottom: 3px solid #00ffff;
+  overflow: hidden;
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: linear-gradient(180deg, #000033 0%, #000011 100%);
+}
+
+#game-stats {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.stat-item {
+  background: rgba(0, 0, 17, 0.9);
+  border: 2px solid #00ffff;
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #39ff14;
+  text-shadow: 0 0 10px #39ff14;
+}
+
+.stat-value.coins {
+  color: #f7931e;
+  text-shadow: 0 0 10px #f7931e;
+}
+
+.shoot-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 107, 53, 0.9);
+  color: #ffffff;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  font-weight: bold;
+  font-size: 1rem;
+  animation: bounce 1s infinite;
+  border: 2px solid #ff6b35;
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-5px);
+  }
+}
+
+/* CONTROL PANEL */
+#control-panel {
+  height: 33vh;
+  background: linear-gradient(to bottom, #16213e, #1a1a2e);
+  border-top: 3px solid #00ffff;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.panel-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.panel-header h3 {
+  font-size: 1.2rem;
+  color: #ff6b35;
+  text-shadow: 0 0 10px #ff6b35;
+  letter-spacing: 2px;
+}
+
+.upgrade-selection {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.upgrade-card {
+  min-width: 70px;
+  background: rgba(0, 0, 17, 0.8);
+  border: 2px solid #555;
+  border-radius: 10px;
+  padding: 0.8rem 0.4rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.upgrade-card:hover {
+  border-color: #ff6b35;
+  background: rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
+  transform: translateY(-2px);
+}
+
+.upgrade-card.affordable {
+  border-color: #39ff14;
+  background: rgba(57, 255, 20, 0.1);
+}
+
+.upgrade-card.unaffordable {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upgrade-icon {
+  font-size: 1.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.upgrade-name {
+  font-size: 0.6rem;
+  font-weight: bold;
+  margin-bottom: 0.2rem;
+  color: #ffffff;
+}
+
+.upgrade-level {
+  font-size: 0.5rem;
+  color: #00ffff;
+  margin-bottom: 0.2rem;
+}
+
+.upgrade-cost {
+  font-size: 0.6rem;
+  color: #f7931e;
+  font-weight: bold;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.control-btn {
+  flex: 1;
+  background: rgba(16, 33, 62, 0.9);
+  border: 2px solid #a020f0;
+  color: #ffffff;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+}
+
+.control-btn:hover {
+  background: #a020f0;
+  box-shadow: 0 0 15px rgba(160, 32, 240, 0.5);
+  transform: translateY(-2px);
+}
+
+.control-btn.special {
+  background: linear-gradient(45deg, #ff6b35, #f7931e);
+  border-color: #ff6b35;
+  color: #000;
+}
+
+.control-btn.special:hover {
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+}
+
+/* MODALS */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal {
+  background: linear-gradient(135deg, #16213e, #1a1a2e);
+  border: 3px solid #00ffff;
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  max-width: 90vw;
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
+  animation: modalPop 0.3s ease;
+}
+
+.modal-title {
+  font-size: 1.8rem;
+  color: #ff1493;
+  text-shadow: 0 0 20px #ff1493;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.modal-stats {
+  margin: 1rem 0;
+  font-size: 1rem;
+}
+
+.modal-stats p {
+  margin: 0.5rem 0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  min-width: 120px;
+}
+
+.modal-btn.primary {
+  background: linear-gradient(45deg, #39ff14, #00ffff);
+  color: #000;
+}
+
+.modal-btn:not(.primary) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+.modal-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+/* ANIMATIONS */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes modalPop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* MOBILE OPTIMIZATIONS */
+@media (max-width: 480px) {
+  .game-title {
+    font-size: 2.5rem;
+  }
+
+  .stat-item {
+    padding: 0.4rem 0.8rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .tower-card {
+    min-width: 70px;
+    padding: 0.8rem 0.4rem;
+  }
+
+  .control-btn {
+    padding: 0.7rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* LANDSCAPE ORIENTATION */
+@media (orientation: landscape) and (max-height: 500px) {
+  #game-area {
+    height: 70vh;
+  }
+
+  #control-panel {
+    height: 30vh;
+    padding: 0.5rem;
+  }
+
+  .tower-selection {
+    margin-bottom: 0.5rem;
+  }
+}
