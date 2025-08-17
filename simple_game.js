@@ -24,6 +24,51 @@ class SimpleOrbDestroyer {
       fireRate: 50,
       autoFireRate: 300,
       damage: 10,
+      piercing: 1,
+      multishot: 1,
+    };
+
+    // Upgrades
+    this.upgrades = {
+      damage: { level: 1, cost: 10, multiplier: 1.5 },
+      speed: { level: 1, cost: 15, multiplier: 0.8 },
+      piercing: { level: 1, cost: 25, multiplier: 1 },
+      multishot: { level: 1, cost: 50, multiplier: 1 },
+    };
+
+    // Skins system
+    this.skins = {
+      default: { name: "Classic", cost: 0, owned: true, color: "#ff6b35" },
+      plasma: { name: "Plasma", cost: 50, owned: false, color: "#00ffff" },
+      fire: { name: "Fire", cost: 100, owned: false, color: "#ff0000" },
+      ice: { name: "Ice", cost: 150, owned: false, color: "#87ceeb" },
+      gold: { name: "Golden", cost: 300, owned: false, color: "#ffd700" },
+      rainbow: { name: "Rainbow", cost: 500, owned: false, color: "rainbow" },
+    };
+    this.currentSkin = "default";
+
+    // IAP Store
+    this.iapStore = {
+      diamonds: [
+        { icon: "💎", amount: 100, price: "$0.99" },
+        { icon: "💎", amount: 500, price: "$2.99" },
+        { icon: "💎", amount: 1200, price: "$4.99" },
+        { icon: "💎", amount: 2500, price: "$9.99" },
+        { icon: "💎", amount: 10000, price: "$49.99" },
+      ],
+      coins: [
+        { icon: "🪙", amount: 1000, price: "$0.99" },
+        { icon: "🪙", amount: 5000, price: "$2.99" },
+        { icon: "🪙", amount: 15000, price: "$4.99" },
+        { icon: "🪙", amount: 50000, price: "$19.99" },
+        { icon: "🪙", amount: 100000, price: "$29.99" },
+      ],
+      powerups: [
+        { icon: "💥", name: "Double Damage", price: "$1.99" },
+        { icon: "⚡", name: "Rapid Fire", price: "$1.99" },
+        { icon: "🎯", name: "Multi-Shot", price: "$1.99" },
+        { icon: "🔥", name: "Piercing Shot", price: "$1.99" },
+      ],
     };
 
     // Game objects
@@ -52,6 +97,28 @@ class SimpleOrbDestroyer {
 
     document.getElementById("auto-fire-btn").addEventListener("click", () => {
       this.toggleAutoFire();
+    });
+
+    // Pause button
+    document.getElementById("pause-btn").addEventListener("click", () => {
+      this.togglePause();
+    });
+
+    // Skins and shop buttons
+    document.getElementById("skins-btn").addEventListener("click", () => {
+      this.showSkins();
+    });
+
+    document.getElementById("shop-btn").addEventListener("click", () => {
+      this.showShop();
+    });
+
+    // Upgrade buttons
+    document.querySelectorAll(".upgrade-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const upgradeType = card.dataset.upgrade;
+        this.buyUpgrade(upgradeType);
+      });
     });
   }
 
@@ -98,6 +165,187 @@ class SimpleOrbDestroyer {
     }
   }
 
+  togglePause() {
+    if (this.gameState === "playing") {
+      this.gameState = "paused";
+      document.getElementById("pause-btn").innerHTML = "▶️ RESUME";
+    } else if (this.gameState === "paused") {
+      this.gameState = "playing";
+      document.getElementById("pause-btn").innerHTML = "⏸️ PAUSE";
+    }
+  }
+
+  buyUpgrade(type) {
+    const upgrade = this.upgrades[type];
+    if (this.coins >= upgrade.cost) {
+      this.coins -= upgrade.cost;
+      upgrade.level++;
+
+      // Apply upgrade effects
+      switch (type) {
+        case "damage":
+          this.cannon.damage = Math.floor(
+            10 * Math.pow(upgrade.multiplier, upgrade.level - 1)
+          );
+          break;
+        case "speed":
+          this.cannon.fireRate = Math.max(
+            10,
+            Math.floor(50 * Math.pow(upgrade.multiplier, upgrade.level - 1))
+          );
+          break;
+        case "piercing":
+          this.cannon.piercing = upgrade.level;
+          break;
+        case "multishot":
+          this.cannon.multishot = upgrade.level;
+          break;
+      }
+
+      // Update cost for next level
+      upgrade.cost = Math.floor(upgrade.cost * 1.5);
+
+      this.updateStats();
+      this.updateUpgradeDisplay();
+    }
+  }
+
+  updateUpgradeDisplay() {
+    Object.keys(this.upgrades).forEach((type) => {
+      const upgrade = this.upgrades[type];
+      document.getElementById(`${type}-level`).textContent = upgrade.level;
+      document.getElementById(`${type}-cost`).textContent = upgrade.cost;
+
+      // Update affordability
+      const card = document.querySelector(`[data-upgrade="${type}"]`);
+      if (this.coins >= upgrade.cost) {
+        card.classList.add("affordable");
+        card.classList.remove("unaffordable");
+      } else {
+        card.classList.remove("affordable");
+        card.classList.add("unaffordable");
+      }
+    });
+  }
+
+  showSkins() {
+    this.populateSkinsModal();
+    document.getElementById("skins-modal").classList.remove("hidden");
+  }
+
+  showShop() {
+    this.populateShopModal();
+    document.getElementById("shop-modal").classList.remove("hidden");
+  }
+
+  populateSkinsModal() {
+    const skinsGrid = document.getElementById("skins-grid");
+    skinsGrid.innerHTML = "";
+
+    Object.entries(this.skins).forEach(([skinId, skin]) => {
+      const skinItem = document.createElement("div");
+      skinItem.className = "skin-item";
+
+      if (skin.owned) {
+        skinItem.classList.add("owned");
+      }
+
+      if (this.currentSkin === skinId) {
+        skinItem.classList.add("selected");
+      }
+
+      skinItem.innerHTML = `
+        <div class="skin-preview">🔫</div>
+        <div class="skin-name">${skin.name}</div>
+        <div class="skin-price">${
+          skin.cost === 0 ? "FREE" : `${skin.cost} 💎`
+        }</div>
+      `;
+
+      skinItem.onclick = () => this.selectSkin(skinId);
+      skinsGrid.appendChild(skinItem);
+    });
+  }
+
+  selectSkin(skinId) {
+    const skin = this.skins[skinId];
+
+    if (skin.owned) {
+      this.currentSkin = skinId;
+      this.populateSkinsModal();
+    } else {
+      if (this.diamonds >= skin.cost) {
+        this.diamonds -= skin.cost;
+        skin.owned = true;
+        this.currentSkin = skinId;
+        this.updateStats();
+        this.populateSkinsModal();
+      } else {
+        alert(`Need ${skin.cost - this.diamonds} more diamonds!`);
+      }
+    }
+  }
+
+  populateShopModal() {
+    // Diamond packages
+    const diamondsShop = document.getElementById("diamonds-shop");
+    diamondsShop.innerHTML = "";
+    this.iapStore.diamonds.forEach((pack) => {
+      const item = this.createShopItem(
+        pack.icon,
+        pack.amount + " Diamonds",
+        pack.price,
+        () => {
+          alert(
+            `Purchase ${pack.amount} diamonds for ${pack.price}?\\n(Demo - not implemented)`
+          );
+        }
+      );
+      diamondsShop.appendChild(item);
+    });
+
+    // Coin packages
+    const coinsShop = document.getElementById("coins-shop");
+    coinsShop.innerHTML = "";
+    this.iapStore.coins.forEach((pack) => {
+      const item = this.createShopItem(
+        pack.icon,
+        pack.amount + " Coins",
+        pack.price,
+        () => {
+          alert(
+            `Purchase ${pack.amount} coins for ${pack.price}?\\n(Demo - not implemented)`
+          );
+        }
+      );
+      coinsShop.appendChild(item);
+    });
+
+    // Powerup packages
+    const powerupsShop = document.getElementById("powerups-shop");
+    powerupsShop.innerHTML = "";
+    this.iapStore.powerups.forEach((pack) => {
+      const item = this.createShopItem(pack.icon, pack.name, pack.price, () => {
+        alert(
+          `Purchase ${pack.name} for ${pack.price}?\\n(Demo - not implemented)`
+        );
+      });
+      powerupsShop.appendChild(item);
+    });
+  }
+
+  createShopItem(icon, amount, price, onclick) {
+    const item = document.createElement("div");
+    item.className = "shop-item";
+    item.innerHTML = `
+      <div class="shop-item-icon">${icon}</div>
+      <div class="shop-item-amount">${amount}</div>
+      <div class="shop-item-price">${price}</div>
+    `;
+    item.onclick = onclick;
+    return item;
+  }
+
   shoot(isManual = true) {
     if (this.gameState !== "playing") return;
 
@@ -107,13 +355,25 @@ class SimpleOrbDestroyer {
 
     this.cannon.lastShot = now;
 
-    this.projectiles.push({
-      x: this.cannon.x,
-      y: this.cannon.y,
-      vx: 0,
-      vy: -10,
-      damage: this.cannon.damage,
-    });
+    // Calculate shots based on multishot upgrade
+    const shots = this.cannon.multishot;
+    const spreadAngle = shots > 1 ? Math.PI / 8 : 0; // 22.5 degrees spread
+
+    for (let i = 0; i < shots; i++) {
+      let angle = -Math.PI / 2; // Straight up
+      if (shots > 1) {
+        angle += (i - (shots - 1) / 2) * (spreadAngle / (shots - 1));
+      }
+
+      this.projectiles.push({
+        x: this.cannon.x,
+        y: this.cannon.y,
+        vx: Math.sin(angle) * 10,
+        vy: Math.cos(angle) * -10,
+        damage: this.cannon.damage,
+        piercing: this.cannon.piercing,
+      });
+    }
   }
 
   update() {
@@ -136,7 +396,8 @@ class SimpleOrbDestroyer {
         );
         if (dist < this.currentOrb.radius) {
           this.hitOrb(proj);
-          return false;
+          proj.piercing--;
+          if (proj.piercing <= 0) return false;
         }
       }
 
@@ -189,6 +450,7 @@ class SimpleOrbDestroyer {
     document.getElementById(
       "orb-progress"
     ).textContent = `${this.orbsThisLevel}/${this.orbsPerLevel}`;
+    this.updateUpgradeDisplay();
   }
 
   render() {
