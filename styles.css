@@ -101,7 +101,7 @@ body {
 }
 
 #game-area {
-  height: 67vh;
+  height: 65vh;
   position: relative;
   background: #000011;
   border-bottom: 3px solid #00ffff;
@@ -181,7 +181,7 @@ body {
 
 /* CONTROL PANEL */
 #control-panel {
-  height: 33vh;
+  height: 35vh;
   background: linear-gradient(to bottom, #16213e, #1a1a2e);
   border-top: 3px solid #00ffff;
   padding: 1rem;
@@ -416,25 +416,160 @@ body {
 /* MOBILE OPTIMIZATIONS */
 @media (max-width: 480px) {
   .game-title {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .start-subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .start-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .start-instructions {
+    font-size: 0.8rem;
   }
 
   .stat-item {
-    padding: 0.4rem 0.8rem;
+    padding: 0.3rem 0.6rem;
   }
 
   .stat-value {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
   }
 
   .tower-card {
-    min-width: 70px;
-    padding: 0.8rem 0.4rem;
+    min-width: 65px;
+    padding: 0.6rem 0.3rem;
   }
 
   .control-btn {
-    padding: 0.7rem 0.8rem;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  #control-panel {
+    padding: 0.8rem;
+  }
+
+  .panel-header h3 {
+    font-size: 1.1rem;
+  }
+}
+
+/* iPhone 12 SPECIFIC (390x844) */
+@media (max-width: 414px) and (min-height: 800px) {
+  .game-title {
+    font-size: 2rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .start-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .start-button {
+    padding: 0.7rem 1.3rem;
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .start-instructions {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+
+  .start-instructions p {
+    margin: 0.3rem 0;
+  }
+
+  #game-area {
+    height: 65vh;
+  }
+
+  #control-panel {
+    height: 35vh;
+    padding: 0.7rem;
+  }
+
+  #game-stats {
+    top: 0.7rem;
+    left: 0.7rem;
+    right: 0.7rem;
+  }
+
+  .stat-item {
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+  }
+
+  .shoot-indicator {
+    bottom: 1.5rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .tower-card {
+    min-width: 60px;
+    padding: 0.5rem 0.25rem;
+    margin: 0.3rem;
+    border-radius: 8px;
+  }
+
+  .tower-card h4 {
     font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .tower-card .level {
+    font-size: 0.7rem;
+  }
+
+  .tower-card .cost {
+    font-size: 0.75rem;
+  }
+
+  .control-btn {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.7rem;
+    margin: 0.2rem;
+    border-radius: 8px;
+  }
+
+  .panel-header {
+    margin-bottom: 0.7rem;
+  }
+
+  .panel-header h3 {
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+
+  .upgrade-selection {
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .tower-grid {
+    gap: 0.4rem;
   }
 }
 
