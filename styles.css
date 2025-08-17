@@ -588,3 +588,164 @@ body {
     margin-bottom: 0.5rem;
   }
 }
+
+/* Skins and Shop Modals */
+.skins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.skin-item {
+  padding: 15px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 2px solid #00ffff;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.skin-item.owned {
+  border-color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.skin-item.selected {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.skin-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.skin-preview {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.skin-name {
+  color: #00ffff;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.skin-price {
+  color: #ff00ff;
+  font-size: 12px;
+}
+
+.shop-sections {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.shop-section {
+  margin-bottom: 30px;
+}
+
+.shop-section h3 {
+  color: #00ffff;
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.shop-item {
+  padding: 15px;
+  background: rgba(255, 0, 255, 0.1);
+  border: 2px solid #ff00ff;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.shop-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+}
+
+.shop-item-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.shop-item-amount {
+  color: #00ffff;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.shop-item-price {
+  color: #00ff00;
+  font-size: 14px;
+}
+
+.close-modal-btn {
+  background: rgba(255, 0, 0, 0.2);
+  border: 2px solid #ff0000;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+}
+
+.close-modal-btn:hover {
+  background: #ff0000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+/* iPhone 12 specific adjustments for modals */
+@media only screen and (max-width: 390px) and (max-height: 844px) {
+  .skins-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .skin-item {
+    padding: 10px;
+  }
+
+  .skin-preview {
+    font-size: 1.5rem;
+  }
+
+  .skin-name {
+    font-size: 12px;
+  }
+
+  .shop-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .shop-item {
+    padding: 10px;
+  }
+
+  .shop-item-icon {
+    font-size: 1.5rem;
+  }
+
+  .shop-sections {
+    max-height: 300px;
+  }
+}

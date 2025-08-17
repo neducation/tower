@@ -37,12 +37,16 @@
             <span class="stat-value coins" id="coins">0</span>
           </div>
           <div class="stat-item">
+            <span class="stat-label">DIAMONDS</span>
+            <span class="stat-value diamonds" id="diamonds">0</span>
+          </div>
+          <div class="stat-item">
             <span class="stat-label">LEVEL</span>
             <span class="stat-value" id="level">1</span>
           </div>
           <div class="stat-item">
-            <span class="stat-label">POWER</span>
-            <span class="stat-value" id="power">1</span>
+            <span class="stat-label">ORBS</span>
+            <span class="stat-value" id="orb-progress">0/5</span>
           </div>
         </div>
 
@@ -92,9 +96,9 @@
 
         <div class="control-buttons">
           <button id="pause-btn" class="control-btn">⏸️ PAUSE</button>
-          <button id="auto-fire-btn" class="control-btn special">
-            🤖 AUTO-FIRE
-          </button>
+          <button id="auto-fire-btn" class="control-btn">🤖 AUTO-FIRE</button>
+          <button id="skins-btn" class="control-btn">🎨 SKINS</button>
+          <button id="shop-btn" class="control-btn">🛒 SHOP</button>
         </div>
       </div>
     </div>
@@ -132,6 +136,55 @@
       </div>
     </div>
 
-    <script src="game.js"></script>
+    <!-- Skins Modal -->
+    <div id="skins-modal" class="modal-overlay hidden">
+      <div class="modal">
+        <h2 class="modal-title">🎨 CANNON SKINS</h2>
+        <div id="skins-grid" class="skins-grid">
+          <!-- Skins will be populated by JavaScript -->
+        </div>
+        <button
+          class="close-modal-btn"
+          onclick="document.getElementById('skins-modal').classList.add('hidden')"
+        >
+          CLOSE
+        </button>
+      </div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div id="shop-modal" class="modal-overlay hidden">
+      <div class="modal">
+        <h2 class="modal-title">🛒 PREMIUM SHOP</h2>
+        <div class="shop-sections">
+          <div class="shop-section">
+            <h3>💎 DIAMONDS</h3>
+            <div class="shop-grid" id="diamonds-shop">
+              <!-- Diamond packages will be populated by JavaScript -->
+            </div>
+          </div>
+          <div class="shop-section">
+            <h3>🪙 COINS</h3>
+            <div class="shop-grid" id="coins-shop">
+              <!-- Coin packages will be populated by JavaScript -->
+            </div>
+          </div>
+          <div class="shop-section">
+            <h3>⚡ POWERUPS</h3>
+            <div class="shop-grid" id="powerups-shop">
+              <!-- Powerup packages will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+        <button
+          class="close-modal-btn"
+          onclick="document.getElementById('shop-modal').classList.add('hidden')"
+        >
+          CLOSE
+        </button>
+      </div>
+    </div>
+
+    <script src="simple_game.js"></script>
   </body>
 </html>

@@ -8,19 +8,28 @@ class OrbDestroyer {
     this.gameState = "menu";
     this.level = 1;
     this.coins = 0;
+    this.diamonds = 0;
     this.cannonPower = 1;
+
+    // Progression system
+    this.orbsDestroyed = 0;
+    this.orbsThisLevel = 0;
+    this.orbsPerLevel = 5; // Auto-progress after 5 orbs
+    this.levelBonus = 0;
 
     // Cannon properties
     this.cannon = {
       x: 0, // Will be set to center
       y: 0, // Will be set to bottom
       angle: 0,
-      fireRate: 500,
+      fireRate: 50, // Fast manual tapping rate
+      autoFireRate: 300, // Slower auto-fire rate
       lastShot: 0,
       damage: 10,
       piercing: 1,
       multishot: 1,
       autoFire: false,
+      skin: "default", // Cosmetic skin
     };
 
     // Upgrades
@@ -29,6 +38,40 @@ class OrbDestroyer {
       speed: { level: 1, cost: 15, multiplier: 0.8 },
       piercing: { level: 1, cost: 25, multiplier: 1 },
       multishot: { level: 1, cost: 50, multiplier: 1 },
+    };
+
+    // Cosmetic skins
+    this.skins = {
+      default: { name: "Classic", cost: 0, owned: true, color: "#ff6b35" },
+      plasma: { name: "Plasma", cost: 50, owned: false, color: "#00ffff" },
+      fire: { name: "Fire", cost: 100, owned: false, color: "#ff0000" },
+      ice: { name: "Ice", cost: 150, owned: false, color: "#87ceeb" },
+      gold: { name: "Golden", cost: 300, owned: false, color: "#ffd700" },
+      rainbow: { name: "Rainbow", cost: 500, owned: false, color: "rainbow" },
+    };
+
+    // IAP Store items
+    this.iapStore = {
+      diamonds: [
+        { icon: "💎", amount: 100, price: "$0.99" },
+        { icon: "💎", amount: 500, price: "$2.99" },
+        { icon: "💎", amount: 1200, price: "$4.99" },
+        { icon: "💎", amount: 2500, price: "$9.99" },
+        { icon: "💎", amount: 10000, price: "$49.99" },
+      ],
+      coins: [
+        { icon: "🪙", amount: 1000, price: "$0.99" },
+        { icon: "🪙", amount: 5000, price: "$2.99" },
+        { icon: "🪙", amount: 15000, price: "$4.99" },
+        { icon: "🪙", amount: 50000, price: "$19.99" },
+        { icon: "🪙", amount: 100000, price: "$29.99" },
+      ],
+      powerups: [
+        { icon: "💥", name: "Double Damage", price: "$1.99" },
+        { icon: "⚡", name: "Rapid Fire", price: "$1.99" },
+        { icon: "🎯", name: "Multi-Shot", price: "$1.99" },
+        { icon: "🔥", name: "Piercing Shot", price: "$1.99" },
+      ],
     };
 
     // Game objects
@@ -133,14 +176,166 @@ class OrbDestroyer {
       .addEventListener("click", () => {
         this.hideModal("level-complete-modal");
       });
+
+    // Modal show functions
+    this.showSkins = () => {
+      this.populateSkinsModal();
+      document.getElementById("skins-modal").classList.remove("hidden");
+    };
+
+    this.showShop = () => {
+      this.populateShopModal();
+      document.getElementById("shop-modal").classList.remove("hidden");
+    };
+
+    // Populate skins modal
+    this.populateSkinsModal = () => {
+      const skinsGrid = document.getElementById("skins-grid");
+      skinsGrid.innerHTML = "";
+
+      Object.entries(this.skins).forEach(([skinId, skin]) => {
+        const skinItem = document.createElement("div");
+        skinItem.className = "skin-item";
+
+        // Check if owned
+        if (skin.owned) {
+          skinItem.classList.add("owned");
+        }
+
+        // Check if selected
+        if (this.currentSkin === skinId) {
+          skinItem.classList.add("selected");
+        }
+
+        skinItem.innerHTML = `
+          <div class="skin-preview">🔫</div>
+          <div class="skin-name">${skin.name}</div>
+          <div class="skin-price">${
+            skin.cost === 0 ? "FREE" : `${skin.cost} 💎`
+          }</div>
+        `;
+
+        skinItem.onclick = () => this.selectSkin(skinId);
+        skinsGrid.appendChild(skinItem);
+      });
+    };
+
+    // Select/purchase skin
+    this.selectSkin = (skinId) => {
+      const skin = this.skins[skinId];
+
+      if (skin.owned) {
+        // Already owned, just select it
+        this.currentSkin = skinId;
+        this.cannon.skin = skinId;
+        this.populateSkinsModal();
+      } else {
+        // Need to purchase
+        if (this.diamonds >= skin.cost) {
+          this.diamonds -= skin.cost;
+          skin.owned = true;
+          this.currentSkin = skinId;
+          this.cannon.skin = skinId;
+          this.updateStats();
+          this.populateSkinsModal();
+        } else {
+          alert(`Need ${skin.cost - this.diamonds} more diamonds!`);
+        }
+      }
+    };
+
+    // Populate shop modal
+    this.populateShopModal = () => {
+      // Diamond packages
+      const diamondsShop = document.getElementById("diamonds-shop");
+      diamondsShop.innerHTML = "";
+      this.iapStore.diamonds.forEach((pack) => {
+        const item = this.createShopItem(
+          pack.icon,
+          pack.amount + " Diamonds",
+          pack.price,
+          () => {
+            // In a real app, this would trigger IAP
+            alert(
+              `Purchase ${pack.amount} diamonds for ${pack.price}?\\n(Demo - not implemented)`
+            );
+          }
+        );
+        diamondsShop.appendChild(item);
+      });
+
+      // Coin packages
+      const coinsShop = document.getElementById("coins-shop");
+      coinsShop.innerHTML = "";
+      this.iapStore.coins.forEach((pack) => {
+        const item = this.createShopItem(
+          pack.icon,
+          pack.amount + " Coins",
+          pack.price,
+          () => {
+            alert(
+              `Purchase ${pack.amount} coins for ${pack.price}?\\n(Demo - not implemented)`
+            );
+          }
+        );
+        coinsShop.appendChild(item);
+      });
+
+      // Powerup packages
+      const powerupsShop = document.getElementById("powerups-shop");
+      powerupsShop.innerHTML = "";
+      this.iapStore.powerups.forEach((pack) => {
+        const item = this.createShopItem(
+          pack.icon,
+          pack.name,
+          pack.price,
+          () => {
+            alert(
+              `Purchase ${pack.name} for ${pack.price}?\\n(Demo - not implemented)`
+            );
+          }
+        );
+        powerupsShop.appendChild(item);
+      });
+    };
+
+    // Create shop item element
+    this.createShopItem = (icon, amount, price, onclick) => {
+      const item = document.createElement("div");
+      item.className = "shop-item";
+      item.innerHTML = `
+        <div class="shop-item-icon">${icon}</div>
+        <div class="shop-item-amount">${amount}</div>
+        <div class="shop-item-price">${price}</div>
+      `;
+      item.onclick = onclick;
+      return item;
+    };
+
+    // Initialize current skin
+    this.currentSkin = "default";
+
+    // Add event listeners for skins and shop buttons
+    document
+      .getElementById("skins-btn")
+      .addEventListener("click", () => this.showSkins());
+    document
+      .getElementById("shop-btn")
+      .addEventListener("click", () => this.showShop());
   }
 
   startGame() {
     this.gameState = "playing";
     this.showGameScreen();
-    this.resetGame();
-    this.spawnOrb();
-    document.getElementById("shoot-indicator").style.display = "block";
+
+    // Wait a bit for the screen transition, then setup canvas and game
+    setTimeout(() => {
+      this.setupCanvas(); // Recalculate canvas dimensions after screen is visible
+      this.resetGame();
+      this.updateStats();
+      this.spawnOrb();
+      document.getElementById("shoot-indicator").style.display = "block";
+    }, 100);
   }
 
   togglePause() {
@@ -176,11 +371,16 @@ class OrbDestroyer {
     document.getElementById(modalId).classList.add("hidden");
   }
 
-  shoot() {
+  shoot(isManual = true) {
     if (this.gameState !== "playing") return;
 
     const now = Date.now();
-    if (now - this.cannon.lastShot < this.cannon.fireRate) return;
+    const currentFireRate = isManual
+      ? this.cannon.fireRate
+      : this.cannon.autoFireRate;
+    if (now - this.cannon.lastShot < currentFireRate) return;
+
+    this.cannon.lastShot = now;
 
     // Hide shoot indicator after first shot
     document.getElementById("shoot-indicator").style.display = "none";
@@ -242,6 +442,12 @@ class OrbDestroyer {
   }
 
   spawnOrb() {
+    // Ensure canvas dimensions are available
+    if (this.canvasWidth <= 0 || this.canvasHeight <= 0) {
+      console.warn("Canvas not ready, setting up...");
+      this.setupCanvas();
+    }
+
     const orbRadius = 80 + (this.level - 1) * 5;
     const orbHealth = 100 + (this.level - 1) * 50;
     const orbArmor = Math.min(this.level, 8); // Max 8 armor segments
@@ -257,6 +463,15 @@ class OrbDestroyer {
       armor: [],
       destroyed: false,
     };
+
+    console.log(
+      "Orb spawned at:",
+      this.currentOrb.x,
+      this.currentOrb.y,
+      "Canvas size:",
+      this.canvasWidth,
+      this.canvasHeight
+    );
 
     // Create armor segments
     for (let i = 0; i < orbArmor; i++) {
@@ -335,7 +550,7 @@ class OrbDestroyer {
 
     // Auto-fire
     if (this.cannon.autoFire && this.currentOrb && !this.currentOrb.destroyed) {
-      this.shoot();
+      this.shoot(false); // Pass false for auto-fire
     }
 
     // Update orb rotation
@@ -553,6 +768,25 @@ class OrbDestroyer {
   destroyOrb() {
     this.currentOrb.destroyed = true;
 
+    // Progression tracking
+    this.orbsDestroyed++;
+    this.orbsThisLevel++;
+
+    // Earn diamonds from destruction
+    const diamondsEarned = Math.floor(this.level / 2) + 1;
+    this.diamonds += diamondsEarned;
+    this.updateStats();
+
+    // Show diamond reward
+    this.showFloatingText(
+      this.currentOrb.x,
+      this.currentOrb.y - 30,
+      `+${diamondsEarned} 💎`,
+      "#00ffff",
+      "bold 16px Arial",
+      2000
+    );
+
     // Massive explosion effect with multiple types
     for (let i = 0; i < 80; i++) {
       this.particles.push({
@@ -600,18 +834,47 @@ class OrbDestroyer {
     // Drop bonus coins with improved animation
     this.dropCoins(this.currentOrb.x, this.currentOrb.y, 5 + this.level);
 
-    // Show level complete after a delay
-    setTimeout(() => {
-      this.showLevelComplete();
-    }, 1000);
+    // Check for level progression (auto after 5 orbs)
+    if (this.orbsThisLevel >= this.orbsPerLevel) {
+      setTimeout(() => {
+        this.autoProgressLevel();
+      }, 1500);
+    } else {
+      // Spawn next orb after short delay
+      setTimeout(() => {
+        this.spawnOrb();
+      }, 1000);
+    }
   }
 
-  showLevelComplete() {
-    const coinsEarned = 5 + this.level + (5 + this.level); // Base + armor coins
-    document.getElementById("completed-level").textContent = this.level;
-    document.getElementById("coins-earned").textContent = coinsEarned;
-    document.getElementById("total-coins").textContent = this.coins;
-    document.getElementById("level-complete-modal").classList.remove("hidden");
+  autoProgressLevel() {
+    // Calculate level bonus
+    this.levelBonus = this.level * 50 + this.orbsPerLevel * 10;
+    this.coins += this.levelBonus;
+    this.diamonds += Math.floor(this.level / 3) + 2;
+
+    // Show big bonus reward
+    this.showFloatingText(
+      this.canvasWidth / 2,
+      this.canvasHeight / 2,
+      `LEVEL ${this.level} COMPLETE!\n+${this.levelBonus} COINS\n+${
+        Math.floor(this.level / 3) + 2
+      } DIAMONDS`,
+      "#00ff00",
+      "bold 24px Arial",
+      3000
+    );
+
+    // Progress to next level
+    this.level++;
+    this.orbsThisLevel = 0;
+
+    // Spawn new orb after bonus display
+    setTimeout(() => {
+      this.spawnOrb();
+      this.updateStats();
+      this.updateUI();
+    }, 2000);
   }
 
   nextLevel() {
@@ -619,6 +882,25 @@ class OrbDestroyer {
     this.hideModal("level-complete-modal");
     this.spawnOrb();
     this.updateUI();
+  }
+
+  showFloatingText(x, y, text, color, font, duration) {
+    // Create a simple floating text effect with particles
+    const lines = text.split("\n");
+    lines.forEach((line, index) => {
+      this.particles.push({
+        x: x,
+        y: y + index * 25,
+        vx: 0,
+        vy: -1,
+        life: duration / 16, // Convert to frame count (assuming 60fps)
+        maxLife: duration / 16,
+        color: color,
+        type: "text",
+        text: line,
+        font: font,
+      });
+    });
   }
 
   render() {
@@ -642,7 +924,10 @@ class OrbDestroyer {
 
     // Draw orb
     if (this.currentOrb && !this.currentOrb.destroyed) {
+      console.log("Drawing orb at:", this.currentOrb.x, this.currentOrb.y);
       this.drawOrb();
+    } else {
+      console.log("No orb to draw - currentOrb:", this.currentOrb);
     }
 
     // Draw projectiles
@@ -738,6 +1023,14 @@ class OrbDestroyer {
         this.ctx.moveTo(particle.x, particle.y - 3);
         this.ctx.lineTo(particle.x, particle.y + 3);
         this.ctx.stroke();
+      } else if (particle.type === "text") {
+        // Floating text particles
+        this.ctx.fillStyle = particle.color;
+        this.ctx.font = particle.font || "bold 16px Arial";
+        this.ctx.textAlign = "center";
+        this.ctx.shadowColor = particle.color;
+        this.ctx.shadowBlur = 3;
+        this.ctx.fillText(particle.text, particle.x, particle.y);
       } else {
         // Default circular particles with glow
         this.ctx.fillStyle = particle.color;
@@ -914,12 +1207,64 @@ class OrbDestroyer {
 
   drawOrb() {
     const orb = this.currentOrb;
+    if (!orb) {
+      console.log("No orb to draw!");
+      return;
+    }
+
+    console.log(
+      "Drawing orb at:",
+      orb.x,
+      orb.y,
+      "radius:",
+      orb.radius,
+      "health:",
+      orb.health
+    );
 
     this.ctx.save();
-    this.ctx.translate(orb.x, orb.y);
 
-    // Create pulsing energy aura around orb
-    const pulseScale = 1 + Math.sin(Date.now() * 0.005) * 0.1;
+    // Draw a simple, bright, visible orb first
+    this.ctx.fillStyle = "#ff00ff"; // Bright magenta
+    this.ctx.strokeStyle = "#00ffff"; // Cyan border
+    this.ctx.lineWidth = 5;
+    this.ctx.shadowColor = "#ff00ff";
+    this.ctx.shadowBlur = 20;
+
+    this.ctx.beginPath();
+    this.ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Add a health bar above the orb
+    const healthPercent = orb.health / orb.maxHealth;
+    const barWidth = orb.radius * 1.5;
+    const barHeight = 10;
+    const barX = orb.x - barWidth / 2;
+    const barY = orb.y - orb.radius - 30;
+
+    // Health bar background
+    this.ctx.fillStyle = "#333333";
+    this.ctx.fillRect(barX, barY, barWidth, barHeight);
+
+    // Health bar fill
+    this.ctx.fillStyle =
+      healthPercent > 0.5
+        ? "#00ff00"
+        : healthPercent > 0.25
+        ? "#ffff00"
+        : "#ff0000";
+    this.ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+
+    // Health bar border
+    this.ctx.strokeStyle = "#ffffff";
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+    this.ctx.restore();
+  }
+
+  drawStarfield() {
     this.ctx.save();
     this.ctx.scale(pulseScale, pulseScale);
     this.ctx.shadowColor = "#ff00ff";
@@ -1259,9 +1604,21 @@ class OrbDestroyer {
     this.updateUpgradeDisplay();
   }
 
+  updateStats() {
+    document.getElementById("coins").textContent = this.coins;
+    document.getElementById("diamonds").textContent = this.diamonds;
+    document.getElementById("level").textContent = this.level;
+    document.getElementById(
+      "orb-progress"
+    ).textContent = `${this.orbsThisLevel}/${this.orbsPerLevel}`;
+  }
+
   resetGame() {
     this.level = 1;
     this.coins = 0;
+    this.diamonds = 0;
+    this.orbsDestroyed = 0;
+    this.orbsThisLevel = 0;
     this.cannon.damage = 10;
     this.cannon.fireRate = 500;
     this.cannon.autoFire = false;
@@ -1282,7 +1639,7 @@ class OrbDestroyer {
     this.projectiles = [];
     this.particles = [];
     this.coinDrops = [];
-    this.currentOrb = null;
+    // Don't clear currentOrb here - let spawnOrb() handle it
 
     this.updateUI();
     document.getElementById("auto-fire-btn").innerHTML = "🤖 AUTO-FIRE";
