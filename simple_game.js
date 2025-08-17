@@ -15,6 +15,15 @@ class SimpleOrbDestroyer {
     this.orbsThisLevel = 0;
     this.orbsPerLevel = 5;
 
+    // Visual effects
+    this.particles = [];
+    this.explosions = [];
+    this.stars = [];
+    this.time = 0;
+
+    // Generate background stars
+    this.generateStars();
+
     // Cannon
     this.cannon = {
       x: 0,
@@ -86,6 +95,57 @@ class SimpleOrbDestroyer {
     this.canvas.height = window.innerHeight * 0.65;
     this.cannon.x = this.canvas.width / 2;
     this.cannon.y = this.canvas.height - 50;
+  }
+
+  generateStars() {
+    this.stars = [];
+    for (let i = 0; i < 100; i++) {
+      this.stars.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        size: Math.random() * 2 + 0.5,
+        twinkle: Math.random() * Math.PI * 2,
+        speed: Math.random() * 0.5 + 0.1,
+      });
+    }
+  }
+
+  createParticle(x, y, type = "explosion") {
+    const colors = {
+      explosion: ["#ff6b35", "#f7931e", "#ffff00", "#ff0000"],
+      hit: ["#00ffff", "#0080ff", "#ffffff"],
+      diamond: ["#ff00ff", "#ffff00", "#00ffff"],
+      upgrade: ["#00ff00", "#39ff14", "#ffffff"],
+    };
+
+    const particleColors = colors[type] || colors.explosion;
+
+    for (let i = 0; i < (type === "explosion" ? 20 : 8); i++) {
+      this.particles.push({
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 8,
+        vy: (Math.random() - 0.5) * 8,
+        life: 1.0,
+        decay: 0.02 + Math.random() * 0.02,
+        size: Math.random() * 4 + 2,
+        color:
+          particleColors[Math.floor(Math.random() * particleColors.length)],
+        type: type,
+      });
+    }
+  }
+
+  createExplosion(x, y, size = 50) {
+    this.explosions.push({
+      x: x,
+      y: y,
+      size: 0,
+      maxSize: size,
+      life: 1.0,
+      decay: 0.05,
+    });
+    this.createParticle(x, y, "explosion");
   }
 
   bindEvents() {
@@ -165,6 +225,9 @@ class SimpleOrbDestroyer {
     if (this.coins >= upgrade.cost) {
       this.coins -= upgrade.cost;
       upgrade.level++;
+
+      // Create upgrade particle effect
+      this.createParticle(this.cannon.x, this.cannon.y, "upgrade");
 
       // Apply upgrade effects
       switch (type) {
@@ -398,19 +461,29 @@ class SimpleOrbDestroyer {
   hitOrb(projectile) {
     this.currentOrb.health -= projectile.damage;
 
+    // Create hit particle effect
+    this.createParticle(this.currentOrb.x, this.currentOrb.y, "hit");
+
     if (this.currentOrb.health <= 0) {
       this.destroyOrb();
     }
   }
 
   destroyOrb() {
+    // Create explosion effect
+    this.createExplosion(this.currentOrb.x, this.currentOrb.y, 80);
+
     this.currentOrb.destroyed = true;
     this.orbsDestroyed++;
     this.orbsThisLevel++;
 
     // Earn rewards
     this.coins += 10 + this.level * 5;
-    this.diamonds += Math.floor(this.level / 2) + 1;
+    const diamondsEarned = Math.floor(this.level / 2) + 1;
+    this.diamonds += diamondsEarned;
+
+    // Create diamond particle effect
+    this.createParticle(this.currentOrb.x, this.currentOrb.y, "diamond");
 
     this.updateStats();
 
@@ -444,27 +517,102 @@ class SimpleOrbDestroyer {
   }
 
   render() {
-    // Clear screen
-    this.ctx.fillStyle = "#000011";
+    // Clear screen with gradient
+    const gradient = this.ctx.createRadialGradient(
+      this.canvas.width / 2,
+      this.canvas.height / 2,
+      0,
+      this.canvas.width / 2,
+      this.canvas.height / 2,
+      Math.max(this.canvas.width, this.canvas.height)
+    );
+    gradient.addColorStop(0, "#000033");
+    gradient.addColorStop(0.5, "#000022");
+    gradient.addColorStop(1, "#000011");
+    this.ctx.fillStyle = gradient;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw cannon (simple triangle)
-    this.ctx.fillStyle = "#00ffff";
+    // Draw animated stars
+    this.drawStars();
+
+    // Draw particles
+    this.drawParticles();
+
+    // Draw explosions
+    this.drawExplosions();
+
+    // Draw enhanced cannon
+    const skinColor = this.getSkinColor();
+
+    // Cannon base glow
+    this.ctx.shadowColor = skinColor;
+    this.ctx.shadowBlur = 20;
+    this.ctx.fillStyle = skinColor;
+
+    // Main cannon body (enhanced triangle)
     this.ctx.beginPath();
     this.ctx.moveTo(this.cannon.x, this.cannon.y);
-    this.ctx.lineTo(this.cannon.x - 20, this.cannon.y + 30);
-    this.ctx.lineTo(this.cannon.x + 20, this.cannon.y + 30);
+    this.ctx.lineTo(this.cannon.x - 25, this.cannon.y + 35);
+    this.ctx.lineTo(this.cannon.x + 25, this.cannon.y + 35);
     this.ctx.closePath();
     this.ctx.fill();
 
-    // Draw orb (BIG AND OBVIOUS!)
-    if (this.currentOrb && !this.currentOrb.destroyed) {
-      console.log("Rendering orb at:", this.currentOrb.x, this.currentOrb.y);
+    // Cannon barrel
+    this.ctx.fillStyle = "#ffffff";
+    this.ctx.shadowBlur = 10;
+    this.ctx.fillRect(this.cannon.x - 4, this.cannon.y - 15, 8, 20);
 
-      // Main orb body - BRIGHT MAGENTA
-      this.ctx.fillStyle = "#ff00ff";
-      this.ctx.strokeStyle = "#00ffff";
-      this.ctx.lineWidth = 5;
+    // Cannon base
+    this.ctx.fillStyle = "#555555";
+    this.ctx.shadowBlur = 5;
+    this.ctx.fillRect(this.cannon.x - 30, this.cannon.y + 30, 60, 15);
+
+    this.ctx.shadowBlur = 0;
+
+    // Draw enhanced orb with animations
+    if (this.currentOrb && !this.currentOrb.destroyed) {
+      const healthPercent = this.currentOrb.health / this.currentOrb.maxHealth;
+      const pulseFactor = 1 + Math.sin(Date.now() * 0.01) * 0.1;
+      const orbRadius = this.currentOrb.radius * pulseFactor;
+
+      // Orb outer glow
+      const glowGradient = this.ctx.createRadialGradient(
+        this.currentOrb.x,
+        this.currentOrb.y,
+        0,
+        this.currentOrb.x,
+        this.currentOrb.y,
+        orbRadius * 2
+      );
+      glowGradient.addColorStop(0, "rgba(255, 0, 255, 0.8)");
+      glowGradient.addColorStop(0.5, "rgba(255, 0, 255, 0.3)");
+      glowGradient.addColorStop(1, "rgba(255, 0, 255, 0)");
+
+      this.ctx.fillStyle = glowGradient;
+      this.ctx.beginPath();
+      this.ctx.arc(
+        this.currentOrb.x,
+        this.currentOrb.y,
+        orbRadius * 2,
+        0,
+        Math.PI * 2
+      );
+      this.ctx.fill();
+
+      // Main orb body with gradient
+      const orbGradient = this.ctx.createRadialGradient(
+        this.currentOrb.x - orbRadius * 0.3,
+        this.currentOrb.y - orbRadius * 0.3,
+        0,
+        this.currentOrb.x,
+        this.currentOrb.y,
+        orbRadius
+      );
+      orbGradient.addColorStop(0, "#ff66ff");
+      orbGradient.addColorStop(0.6, "#ff00ff");
+      orbGradient.addColorStop(1, "#cc00cc");
+
+      this.ctx.fillStyle = orbGradient;
       this.ctx.shadowColor = "#ff00ff";
       this.ctx.shadowBlur = 30;
 
@@ -472,35 +620,173 @@ class SimpleOrbDestroyer {
       this.ctx.arc(
         this.currentOrb.x,
         this.currentOrb.y,
-        this.currentOrb.radius,
+        orbRadius,
         0,
         Math.PI * 2
       );
       this.ctx.fill();
-      this.ctx.stroke();
+
+      // Orb energy rings
+      for (let i = 0; i < 3; i++) {
+        const ringRadius =
+          orbRadius + i * 15 + Math.sin(Date.now() * 0.005 + i) * 5;
+        this.ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 - i * 0.1})`;
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.arc(
+          this.currentOrb.x,
+          this.currentOrb.y,
+          ringRadius,
+          0,
+          Math.PI * 2
+        );
+        this.ctx.stroke();
+      }
+
+      this.ctx.shadowBlur = 0;
 
       // Health bar
-      const healthPercent = this.currentOrb.health / this.currentOrb.maxHealth;
       const barWidth = this.currentOrb.radius * 1.5;
       const barX = this.currentOrb.x - barWidth / 2;
-      const barY = this.currentOrb.y - this.currentOrb.radius - 20;
+      const barY = this.currentOrb.y - this.currentOrb.radius - 30;
 
-      this.ctx.fillStyle = "#333";
-      this.ctx.fillRect(barX, barY, barWidth, 10);
+      // Health bar background
+      this.ctx.fillStyle = "rgba(51, 51, 51, 0.8)";
+      this.ctx.fillRect(barX, barY, barWidth, 12);
 
-      this.ctx.fillStyle = healthPercent > 0.5 ? "#00ff00" : "#ff0000";
-      this.ctx.fillRect(barX, barY, barWidth * healthPercent, 10);
+      // Health bar fill with gradient
+      const orbHealthPercent =
+        this.currentOrb.health / this.currentOrb.maxHealth;
+      const healthGradient = this.ctx.createLinearGradient(
+        barX,
+        barY,
+        barX + barWidth,
+        barY
+      );
+      if (orbHealthPercent > 0.5) {
+        healthGradient.addColorStop(0, "#00ff00");
+        healthGradient.addColorStop(1, "#39ff14");
+      } else {
+        healthGradient.addColorStop(0, "#ff0000");
+        healthGradient.addColorStop(1, "#ff6b35");
+      }
 
-      this.ctx.strokeStyle = "#fff";
+      this.ctx.fillStyle = healthGradient;
+      this.ctx.fillRect(barX, barY, barWidth * orbHealthPercent, 12);
+
+      // Health bar border with glow
+      this.ctx.strokeStyle = "#ffffff";
       this.ctx.lineWidth = 2;
-      this.ctx.strokeRect(barX, barY, barWidth, 10);
+      this.ctx.shadowColor = "#ffffff";
+      this.ctx.shadowBlur = 5;
+      this.ctx.strokeRect(barX, barY, barWidth, 12);
+      this.ctx.shadowBlur = 0;
     }
 
-    // Draw projectiles
+    // Draw projectiles with enhanced effects
     this.projectiles.forEach((proj) => {
-      this.ctx.fillStyle = "#ffff00";
+      // Get skin color
+      const skinColor = this.getSkinColor();
+
+      this.ctx.fillStyle = skinColor;
+      this.ctx.shadowColor = skinColor;
+      this.ctx.shadowBlur = 10;
       this.ctx.fillRect(proj.x - 3, proj.y - 10, 6, 20);
+
+      // Add projectile trail
+      this.ctx.globalAlpha = 0.5;
+      this.ctx.fillRect(proj.x - 2, proj.y, 4, 15);
+      this.ctx.globalAlpha = 1.0;
+      this.ctx.shadowBlur = 0;
     });
+  }
+
+  drawStars() {
+    this.time += 0.01;
+    this.stars.forEach((star) => {
+      star.twinkle += star.speed;
+      const alpha = ((Math.sin(star.twinkle) + 1) / 2) * 0.8 + 0.2;
+
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      this.ctx.shadowColor = "#ffffff";
+      this.ctx.shadowBlur = star.size * 2;
+      this.ctx.fillRect(star.x, star.y, star.size, star.size);
+      this.ctx.shadowBlur = 0;
+    });
+  }
+
+  drawParticles() {
+    this.ctx.save();
+    this.particles.forEach((particle, index) => {
+      if (particle.life <= 0) {
+        this.particles.splice(index, 1);
+        return;
+      }
+
+      this.ctx.globalAlpha = particle.life;
+      this.ctx.fillStyle = particle.color;
+      this.ctx.shadowColor = particle.color;
+      this.ctx.shadowBlur = particle.size;
+
+      this.ctx.beginPath();
+      this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Update particle
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.life -= particle.decay;
+      particle.vx *= 0.98; // Air resistance
+      particle.vy *= 0.98;
+    });
+    this.ctx.restore();
+  }
+
+  drawExplosions() {
+    this.ctx.save();
+    this.explosions.forEach((explosion, index) => {
+      if (explosion.life <= 0) {
+        this.explosions.splice(index, 1);
+        return;
+      }
+
+      this.ctx.globalAlpha = explosion.life;
+      this.ctx.strokeStyle = "#ff6b35";
+      this.ctx.lineWidth = 4;
+      this.ctx.shadowColor = "#ff6b35";
+      this.ctx.shadowBlur = 20;
+
+      this.ctx.beginPath();
+      this.ctx.arc(explosion.x, explosion.y, explosion.size, 0, Math.PI * 2);
+      this.ctx.stroke();
+
+      // Inner ring
+      this.ctx.strokeStyle = "#ffff00";
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.arc(
+        explosion.x,
+        explosion.y,
+        explosion.size * 0.6,
+        0,
+        Math.PI * 2
+      );
+      this.ctx.stroke();
+
+      // Update explosion
+      explosion.size = Math.min(explosion.size + 3, explosion.maxSize);
+      explosion.life -= explosion.decay;
+    });
+    this.ctx.restore();
+  }
+
+  getSkinColor() {
+    const skin = this.skins[this.currentSkin];
+    if (skin.color === "rainbow") {
+      const hue = (Date.now() / 10) % 360;
+      return `hsl(${hue}, 100%, 50%)`;
+    }
+    return skin.color;
   }
 
   gameLoop() {
