@@ -99,11 +99,6 @@ class SimpleOrbDestroyer {
       this.toggleAutoFire();
     });
 
-    // Pause button
-    document.getElementById("pause-btn").addEventListener("click", () => {
-      this.togglePause();
-    });
-
     // Skins and shop buttons
     document.getElementById("skins-btn").addEventListener("click", () => {
       this.showSkins();
@@ -162,16 +157,6 @@ class SimpleOrbDestroyer {
     } else {
       btn.innerHTML = "🤖 AUTO-FIRE";
       btn.classList.remove("special");
-    }
-  }
-
-  togglePause() {
-    if (this.gameState === "playing") {
-      this.gameState = "paused";
-      document.getElementById("pause-btn").innerHTML = "▶️ RESUME";
-    } else if (this.gameState === "paused") {
-      this.gameState = "playing";
-      document.getElementById("pause-btn").innerHTML = "⏸️ PAUSE";
     }
   }
 
@@ -357,19 +342,24 @@ class SimpleOrbDestroyer {
 
     // Calculate shots based on multishot upgrade
     const shots = this.cannon.multishot;
-    const spreadAngle = shots > 1 ? Math.PI / 8 : 0; // 22.5 degrees spread
+    const spreadAngle = shots > 1 ? Math.PI / 6 : 0; // 30 degrees spread
 
     for (let i = 0; i < shots; i++) {
-      let angle = -Math.PI / 2; // Straight up
+      let vx = 0;
+      let vy = -10;
+
       if (shots > 1) {
-        angle += (i - (shots - 1) / 2) * (spreadAngle / (shots - 1));
+        const angleOffset =
+          (i - (shots - 1) / 2) * (spreadAngle / Math.max(1, shots - 1));
+        vx = Math.sin(angleOffset) * 10;
+        vy = -Math.cos(angleOffset) * 10;
       }
 
       this.projectiles.push({
         x: this.cannon.x,
         y: this.cannon.y,
-        vx: Math.sin(angle) * 10,
-        vy: Math.cos(angle) * -10,
+        vx: vx,
+        vy: vy,
         damage: this.cannon.damage,
         piercing: this.cannon.piercing,
       });
