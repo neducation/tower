@@ -8,90 +8,27 @@ class OrbDestroyer {
     this.gameState = "menu";
     this.level = 1;
     this.coins = 0;
-    this.totalCoinsEarned = 0;
     this.cannonPower = 1;
-    this.prestige = 0;
-    this.autoProgress = true;
-    this.autoFireEnabled = true;
-    this.rewardMultiplier = 1;
-
-    // Idle/offline progress
-    this.lastPlayTime = Date.now();
-    this.offlineEarnings = 0;
-
-    // Achievement system
-    this.achievements = {
-      firstKill: false,
-      hundredKills: false,
-      millionCoins: false,
-      billionCoins: false,
-      trillionCoins: false,
-      prestigeUnlocked: false,
-    };
 
     // Cannon properties
     this.cannon = {
       x: 0, // Will be set to center
       y: 0, // Will be set to bottom
       angle: 0,
-      fireRate: 300,
+      fireRate: 500,
       lastShot: 0,
       damage: 10,
       piercing: 1,
       multishot: 1,
-      autoFire: true,
+      autoFire: false,
     };
 
-    // Enhanced upgrades with exponential scaling
+    // Upgrades
     this.upgrades = {
-      damage: {
-        level: 1,
-        cost: 10,
-        baseCost: 10,
-        multiplier: 2.0,
-        costMultiplier: 1.15,
-        effect: 1,
-      },
-      speed: {
-        level: 1,
-        cost: 25,
-        baseCost: 25,
-        multiplier: 0.9,
-        costMultiplier: 1.12,
-        effect: 1,
-      },
-      piercing: {
-        level: 1,
-        cost: 100,
-        baseCost: 100,
-        multiplier: 1,
-        costMultiplier: 1.2,
-        effect: 1,
-      },
-      multishot: {
-        level: 1,
-        cost: 500,
-        baseCost: 500,
-        multiplier: 1,
-        costMultiplier: 1.25,
-        effect: 1,
-      },
-      coinMultiplier: {
-        level: 1,
-        cost: 1000,
-        baseCost: 1000,
-        multiplier: 1.5,
-        costMultiplier: 1.3,
-        effect: 1,
-      },
-      autoProgress: {
-        level: 1,
-        cost: 10000,
-        baseCost: 10000,
-        multiplier: 1.2,
-        costMultiplier: 1.4,
-        effect: 1,
-      },
+      damage: { level: 1, cost: 10, multiplier: 1.5 },
+      speed: { level: 1, cost: 15, multiplier: 0.8 },
+      piercing: { level: 1, cost: 25, multiplier: 1 },
+      multishot: { level: 1, cost: 50, multiplier: 1 },
     };
 
     // Game objects
@@ -201,14 +138,9 @@ class OrbDestroyer {
   startGame() {
     this.gameState = "playing";
     this.showGameScreen();
-    if (!this.currentOrb) {
-      this.resetGame();
-      this.spawnOrb();
-    }
-    // Auto-enable auto-fire for immediate satisfaction
-    this.cannon.autoFire = true;
-    this.toggleAutoFire(); // Update UI
-    document.getElementById("shoot-indicator").style.display = "none";
+    this.resetGame();
+    this.spawnOrb();
+    document.getElementById("shoot-indicator").style.display = "block";
   }
 
   togglePause() {
@@ -310,16 +242,9 @@ class OrbDestroyer {
   }
 
   spawnOrb() {
-    // Exponential scaling for never-ending progression
-    const healthBase = 100;
-    const healthMultiplier = Math.pow(1.3, this.level - 1);
-    const prestigeMultiplier = Math.pow(10, this.prestige);
-
-    const orbRadius = Math.min(120, 60 + (this.level - 1) * 2);
-    const orbHealth = Math.floor(
-      healthBase * healthMultiplier * prestigeMultiplier
-    );
-    const orbArmor = Math.min(12, Math.floor(this.level / 5) + 3); // More armor as level increases
+    const orbRadius = 80 + (this.level - 1) * 5;
+    const orbHealth = 100 + (this.level - 1) * 50;
+    const orbArmor = Math.min(this.level, 8); // Max 8 armor segments
 
     this.currentOrb = {
       x: this.canvasWidth / 2,
@@ -328,25 +253,17 @@ class OrbDestroyer {
       health: orbHealth,
       maxHealth: orbHealth,
       rotation: 0,
-      rotationSpeed: 0.015 + this.level * 0.002,
+      rotationSpeed: 0.02 + this.level * 0.005,
       armor: [],
       destroyed: false,
-      tier: Math.floor(this.level / 10) + 1, // Visual tier for different orb types
-      rewardValue: Math.floor(
-        this.level * Math.pow(1.1, this.level) * (1 + this.prestige)
-      ),
     };
 
-    // Create armor segments with exponential health
+    // Create armor segments
     for (let i = 0; i < orbArmor; i++) {
       this.currentOrb.armor.push({
         angle: (i / orbArmor) * Math.PI * 2,
-        health: Math.floor(
-          (20 + this.level * 3) * healthMultiplier * prestigeMultiplier * 0.3
-        ),
-        maxHealth: Math.floor(
-          (20 + this.level * 3) * healthMultiplier * prestigeMultiplier * 0.3
-        ),
+        health: 30 + this.level * 5,
+        maxHealth: 30 + this.level * 5,
         destroyed: false,
       });
     }
@@ -358,7 +275,7 @@ class OrbDestroyer {
       this.coins -= upgrade.cost;
       upgrade.level++;
 
-      // Apply upgrade effects with exponential scaling
+      // Apply upgrade effects
       switch (type) {
         case "damage":
           this.cannon.damage = Math.floor(
@@ -366,9 +283,8 @@ class OrbDestroyer {
           );
           break;
         case "speed":
-          this.cannon.fireRate = Math.max(
-            50,
-            Math.floor(300 * Math.pow(upgrade.multiplier, upgrade.level - 1))
+          this.cannon.fireRate = Math.floor(
+            500 * Math.pow(upgrade.multiplier, upgrade.level - 1)
           );
           break;
         case "piercing":
@@ -377,88 +293,29 @@ class OrbDestroyer {
         case "multishot":
           // Multishot handled in shoot logic
           break;
-        case "coinMultiplier":
-          this.rewardMultiplier = Math.pow(
-            upgrade.multiplier,
-            upgrade.level - 1
-          );
-          break;
-        case "autoProgress":
-          // Faster auto progression
-          break;
       }
 
-      // Exponential cost scaling that never breaks
-      upgrade.cost = Math.floor(
-        upgrade.baseCost * Math.pow(upgrade.costMultiplier, upgrade.level)
-      );
-
-      // Big number formatting to prevent overflow
-      if (upgrade.cost > Number.MAX_SAFE_INTEGER / 1000) {
-        upgrade.cost = Number.MAX_SAFE_INTEGER / 1000;
-      }
+      // Update cost for next level
+      upgrade.cost = Math.floor(upgrade.cost * 1.8);
 
       this.updateUI();
       this.updateUpgradeDisplay();
-      this.showUpgradeReward(type);
     }
-  }
-
-  showUpgradeReward(type) {
-    // Create satisfying upgrade reward popup
-    const upgradeNames = {
-      damage: "DAMAGE BOOST!",
-      speed: "FIRE RATE UP!",
-      piercing: "PIERCING POWER!",
-      multishot: "MULTI-SHOT!",
-      coinMultiplier: "COIN MULTIPLIER!",
-      autoProgress: "AUTO BOOST!",
-    };
-
-    this.showFloatingText(
-      this.canvasWidth / 2,
-      this.canvasHeight / 2,
-      upgradeNames[type],
-      "#00ff00",
-      "bold 24px Arial",
-      2000
-    );
-  }
-
-  showFloatingText(x, y, text, color, font, duration) {
-    this.floatingTexts = this.floatingTexts || [];
-    this.floatingTexts.push({
-      x: x,
-      y: y,
-      text: text,
-      color: color,
-      font: font,
-      life: duration,
-      maxLife: duration,
-      vy: -2,
-    });
   }
 
   updateUpgradeDisplay() {
     Object.keys(this.upgrades).forEach((type) => {
       const upgrade = this.upgrades[type];
-      const levelElement = document.getElementById(`${type}-level`);
-      const costElement = document.getElementById(`${type}-cost`);
-
-      if (levelElement)
-        levelElement.textContent = this.formatNumber(upgrade.level);
-      if (costElement)
-        costElement.textContent = this.formatNumber(upgrade.cost);
+      document.getElementById(`${type}-level`).textContent = upgrade.level;
+      document.getElementById(`${type}-cost`).textContent = upgrade.cost;
 
       const card = document.querySelector(`[data-upgrade="${type}"]`);
-      if (card) {
-        if (this.coins >= upgrade.cost) {
-          card.classList.add("affordable");
-          card.classList.remove("unaffordable");
-        } else {
-          card.classList.remove("affordable");
-          card.classList.add("unaffordable");
-        }
+      if (this.coins >= upgrade.cost) {
+        card.classList.add("affordable");
+        card.classList.remove("unaffordable");
+      } else {
+        card.classList.remove("affordable");
+        card.classList.add("unaffordable");
       }
     });
   }
@@ -476,8 +333,8 @@ class OrbDestroyer {
   update(dt) {
     if (this.gameState !== "playing") return;
 
-    // Always auto-fire for maximum satisfaction
-    if (this.currentOrb && !this.currentOrb.destroyed) {
+    // Auto-fire
+    if (this.cannon.autoFire && this.currentOrb && !this.currentOrb.destroyed) {
       this.shoot();
     }
 
@@ -520,47 +377,16 @@ class OrbDestroyer {
       return particle.life > 0;
     });
 
-    // Update floating texts
-    this.floatingTexts = (this.floatingTexts || []).filter((text) => {
-      text.y += text.vy;
-      text.life--;
-      return text.life > 0;
-    });
-
-    // Update coin drops with magnetic collection
+    // Update coin drops
     this.coinDrops = this.coinDrops.filter((coin) => {
-      // Magnetic attraction to cannon
-      const dx = this.cannon.x - coin.x;
-      const dy = this.cannon.y - coin.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      coin.y += coin.vy;
+      coin.vy += 0.3; // gravity
+      coin.rotation += 0.1;
 
-      if (distance < 100) {
-        // Magnetic pull
-        coin.vx = dx * 0.3;
-        coin.vy = dy * 0.3;
-      } else {
-        coin.y += coin.vy;
-        coin.vy += 0.3; // gravity
-      }
-
-      coin.x += coin.vx || 0;
-      coin.rotation += 0.2;
-
-      // Collect coins
-      if (distance < 30 || coin.y > this.canvasHeight - 100) {
-        const coinValue = Math.floor(coin.value * this.rewardMultiplier);
-        this.coins += coinValue;
-        this.totalCoinsEarned += coinValue;
+      // Collect coins that reach the bottom
+      if (coin.y > this.canvasHeight - 100) {
+        this.coins += coin.value;
         this.addCoinCollectEffect(coin.x, coin.y);
-        this.showFloatingText(
-          coin.x,
-          coin.y,
-          `+${this.formatNumber(coinValue)}`,
-          "#ffaa00",
-          "bold 16px Arial",
-          1000
-        );
-        this.checkAchievements();
         this.updateUI();
         return false;
       }
@@ -575,15 +401,6 @@ class OrbDestroyer {
       !this.currentOrb.destroyed
     ) {
       this.destroyOrb();
-    }
-
-    // Auto-progress to next level
-    if (this.autoProgress && this.currentOrb && this.currentOrb.destroyed) {
-      setTimeout(() => {
-        if (this.gameState === "playing") {
-          this.nextLevel();
-        }
-      }, 1500); // Short delay for satisfaction
     }
   }
 
@@ -722,17 +539,13 @@ class OrbDestroyer {
   }
 
   dropCoins(x, y, amount) {
-    const baseValue = Math.floor(this.level * Math.pow(1.05, this.level));
-    const prestigeBonus = this.prestige > 0 ? Math.pow(2, this.prestige) : 1;
-
     for (let i = 0; i < amount; i++) {
       this.coinDrops.push({
         x: x + (Math.random() - 0.5) * 40,
         y: y,
-        vx: (Math.random() - 0.5) * 4,
         vy: -2 - Math.random() * 3,
         rotation: 0,
-        value: Math.floor(baseValue * prestigeBonus * this.rewardMultiplier),
+        value: 1,
       });
     }
   }
@@ -741,14 +554,14 @@ class OrbDestroyer {
     this.currentOrb.destroyed = true;
 
     // Massive explosion effect with multiple types
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 80; i++) {
       this.particles.push({
         x: this.currentOrb.x,
         y: this.currentOrb.y,
-        vx: (Math.random() - 0.5) * 25,
-        vy: (Math.random() - 0.5) * 25,
-        life: 100,
-        maxLife: 100,
+        vx: (Math.random() - 0.5) * 20,
+        vy: (Math.random() - 0.5) * 20,
+        life: 80,
+        maxLife: 80,
         color: `hsl(${Math.random() * 60 + 10}, 100%, ${
           50 + Math.random() * 30
         }%)`,
@@ -758,60 +571,39 @@ class OrbDestroyer {
     }
 
     // Energy discharge sparks
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 30; i++) {
       this.particles.push({
-        x: this.currentOrb.x + (Math.random() - 0.5) * 60,
-        y: this.currentOrb.y + (Math.random() - 0.5) * 60,
-        vx: (Math.random() - 0.5) * 20,
-        vy: (Math.random() - 0.5) * 20,
-        life: 70,
-        maxLife: 70,
+        x: this.currentOrb.x + (Math.random() - 0.5) * 40,
+        y: this.currentOrb.y + (Math.random() - 0.5) * 40,
+        vx: (Math.random() - 0.5) * 15,
+        vy: (Math.random() - 0.5) * 15,
+        life: 50,
+        maxLife: 50,
         color: "#ffffff",
         type: "spark",
       });
     }
 
-    // Rainbow energy wisps for satisfaction
-    for (let i = 0; i < 30; i++) {
+    // Purple energy wisps
+    for (let i = 0; i < 25; i++) {
       this.particles.push({
         x: this.currentOrb.x,
         y: this.currentOrb.y,
-        vx: (Math.random() - 0.5) * 15,
-        vy: (Math.random() - 0.5) * 15,
-        life: 80,
-        maxLife: 80,
-        color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+        vx: (Math.random() - 0.5) * 12,
+        vy: (Math.random() - 0.5) * 12,
+        life: 60,
+        maxLife: 60,
+        color: "#aa00ff",
       });
     }
 
-    // Drop massive coin rewards
-    const coinReward = Math.max(
-      10,
-      Math.floor(this.currentOrb.rewardValue / 5)
-    );
-    this.dropCoins(this.currentOrb.x, this.currentOrb.y, coinReward);
+    // Drop bonus coins with improved animation
+    this.dropCoins(this.currentOrb.x, this.currentOrb.y, 5 + this.level);
 
-    // Big satisfying reward text
-    const totalReward = Math.floor(
-      this.currentOrb.rewardValue * this.rewardMultiplier
-    );
-    this.showFloatingText(
-      this.currentOrb.x,
-      this.currentOrb.y - 50,
-      `ORB DESTROYED! +${this.formatNumber(totalReward)}`,
-      "#ffaa00",
-      "bold 28px Arial",
-      3000
-    );
-
-    // Level complete celebration
+    // Show level complete after a delay
     setTimeout(() => {
-      if (this.autoProgress) {
-        this.nextLevel();
-      } else {
-        this.showLevelComplete();
-      }
-    }, 1500);
+      this.showLevelComplete();
+    }, 1000);
   }
 
   showLevelComplete() {
@@ -825,43 +617,6 @@ class OrbDestroyer {
   nextLevel() {
     this.level++;
     this.hideModal("level-complete-modal");
-
-    // Big level up celebration
-    this.showFloatingText(
-      this.canvasWidth / 2,
-      this.canvasHeight / 2,
-      `LEVEL ${this.level}!`,
-      "#00ffff",
-      "bold 32px Arial",
-      2000
-    );
-
-    // Every 10 levels, show tier progress
-    if (this.level % 10 === 0) {
-      const tier = Math.floor(this.level / 10) + 1;
-      this.showFloatingText(
-        this.canvasWidth / 2,
-        this.canvasHeight / 2 + 50,
-        `TIER ${tier} UNLOCKED!`,
-        "#ff00ff",
-        "bold 24px Arial",
-        2500
-      );
-    }
-
-    // Prestige option at level 100+
-    if (this.level >= 100 && this.prestige === 0) {
-      this.achievements.prestigeUnlocked = true;
-      this.showFloatingText(
-        this.canvasWidth / 2,
-        this.canvasHeight / 2 + 80,
-        "PRESTIGE AVAILABLE!",
-        "#ffaa00",
-        "bold 20px Arial",
-        3000
-      );
-    }
-
     this.spawnOrb();
     this.updateUI();
   }
@@ -1043,22 +798,6 @@ class OrbDestroyer {
       this.ctx.shadowBlur = 0;
       this.ctx.restore();
     });
-
-    // Draw floating texts
-    (this.floatingTexts || []).forEach((text) => {
-      const alpha = text.life / text.maxLife;
-      this.ctx.globalAlpha = alpha;
-      this.ctx.fillStyle = text.color;
-      this.ctx.font = text.font;
-      this.ctx.textAlign = "center";
-      this.ctx.strokeStyle = "#000000";
-      this.ctx.lineWidth = 3;
-
-      // Outline for visibility
-      this.ctx.strokeText(text.text, text.x, text.y);
-      this.ctx.fillText(text.text, text.x, text.y);
-    });
-    this.ctx.globalAlpha = 1;
 
     // Paused overlay
     if (this.gameState === "paused") {
@@ -1514,107 +1253,40 @@ class OrbDestroyer {
   }
 
   updateUI() {
-    document.getElementById("coins").textContent = this.formatNumber(
-      this.coins
-    );
-    document.getElementById("level").textContent = this.formatNumber(
-      this.level
-    );
-    document.getElementById("power").textContent = this.formatNumber(
-      this.cannon.damage
-    );
+    document.getElementById("coins").textContent = this.coins;
+    document.getElementById("level").textContent = this.level;
+    document.getElementById("power").textContent = this.cannon.damage;
     this.updateUpgradeDisplay();
-  }
-
-  formatNumber(num) {
-    if (num < 1000) return num.toString();
-    if (num < 1000000) return (num / 1000).toFixed(1) + "K";
-    if (num < 1000000000) return (num / 1000000).toFixed(1) + "M";
-    if (num < 1000000000000) return (num / 1000000000).toFixed(1) + "B";
-    if (num < 1000000000000000) return (num / 1000000000000).toFixed(1) + "T";
-    if (num < 1000000000000000000)
-      return (num / 1000000000000000).toFixed(1) + "Q";
-    return (num / 1000000000000000000).toFixed(1) + "Qi";
-  }
-
-  checkAchievements() {
-    if (!this.achievements.firstKill && this.level >= 2) {
-      this.achievements.firstKill = true;
-      this.showAchievement("First Orb Destroyed!", "🎯");
-    }
-
-    if (!this.achievements.hundredKills && this.level >= 100) {
-      this.achievements.hundredKills = true;
-      this.showAchievement("Orb Destroyer!", "💥");
-    }
-
-    if (!this.achievements.millionCoins && this.totalCoinsEarned >= 1000000) {
-      this.achievements.millionCoins = true;
-      this.showAchievement("Millionaire!", "💰");
-    }
-
-    if (
-      !this.achievements.billionCoins &&
-      this.totalCoinsEarned >= 1000000000
-    ) {
-      this.achievements.billionCoins = true;
-      this.showAchievement("Billionaire!", "💎");
-    }
-
-    if (
-      !this.achievements.trillionCoins &&
-      this.totalCoinsEarned >= 1000000000000
-    ) {
-      this.achievements.trillionCoins = true;
-      this.showAchievement("Trillionaire!", "👑");
-    }
-  }
-
-  showAchievement(title, icon) {
-    this.showFloatingText(
-      this.canvasWidth / 2,
-      50,
-      `${icon} ${title}`,
-      "#ffaa00",
-      "bold 20px Arial",
-      4000
-    );
   }
 
   resetGame() {
     this.level = 1;
-    this.coins = 100; // Give starting coins for immediate upgrades
-    this.totalCoinsEarned = 0;
-    this.prestige = 0;
-    this.rewardMultiplier = 1;
+    this.coins = 0;
     this.cannon.damage = 10;
-    this.cannon.fireRate = 300;
-    this.cannon.autoFire = true;
+    this.cannon.fireRate = 500;
+    this.cannon.autoFire = false;
 
-    // Reset upgrades but keep some progression feel
+    // Reset upgrades
     Object.keys(this.upgrades).forEach((type) => {
-      const upgrade = this.upgrades[type];
-      upgrade.level = 1;
-      upgrade.cost = upgrade.baseCost;
+      this.upgrades[type].level = 1;
+      this.upgrades[type].cost =
+        type === "damage"
+          ? 10
+          : type === "speed"
+          ? 15
+          : type === "piercing"
+          ? 25
+          : 50;
     });
 
     this.projectiles = [];
     this.particles = [];
     this.coinDrops = [];
-    this.floatingTexts = [];
     this.currentOrb = null;
 
     this.updateUI();
-
-    // Welcome message
-    this.showFloatingText(
-      this.canvasWidth / 2,
-      this.canvasHeight / 2,
-      "DESTROY THE ORBS!",
-      "#00ffff",
-      "bold 32px Arial",
-      3000
-    );
+    document.getElementById("auto-fire-btn").innerHTML = "🤖 AUTO-FIRE";
+    document.getElementById("auto-fire-btn").classList.remove("special");
   }
 
   restart() {
