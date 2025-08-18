@@ -853,7 +853,7 @@ body {
 /* Skins and Shop Modals */
 .skins-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin: 20px 0;
   padding: 0 10px;
@@ -1029,7 +1029,7 @@ body {
 
 .shop-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin-bottom: 20px;
 }
@@ -1151,6 +1151,46 @@ body {
   );
   box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
   transform: translateY(-2px);
+}
+
+/* Responsive Grid Layouts for Skins and Shop */
+/* Tablet and small desktop */
+@media (min-width: 481px) and (max-width: 768px) {
+  .skins-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  
+  .shop-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+}
+
+/* Desktop and larger screens */
+@media (min-width: 769px) {
+  .skins-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  
+  .shop-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Large desktop screens */
+@media (min-width: 1200px) {
+  .skins-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 22px;
+  }
+  
+  .shop-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+  }
 }
 
 /* iPhone 12 specific adjustments for modals */
