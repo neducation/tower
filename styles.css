@@ -853,10 +853,29 @@ body {
 /* Skins and Shop Modals */
 .skins-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin: 20px 0;
   padding: 0 10px;
+}
+
+/* Responsive skins grid */
+@media (min-width: 480px) {
+  .skins-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .skins-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .skins-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 .skin-item {
@@ -1029,9 +1048,22 @@ body {
 
 .shop-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin-bottom: 20px;
+}
+
+/* Responsive shop grid */
+@media (min-width: 600px) {
+  .shop-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .shop-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .shop-item {
@@ -1156,7 +1188,6 @@ body {
 /* iPhone 12 specific adjustments for modals */
 @media only screen and (max-width: 390px) and (max-height: 844px) {
   .skins-grid {
-    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     padding: 0 8px;
   }
@@ -1174,7 +1205,6 @@ body {
   }
 
   .shop-grid {
-    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
 
